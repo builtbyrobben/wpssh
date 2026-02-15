@@ -1,6 +1,6 @@
 # Binaries
 bin/
-wpgo
+/wpgo
 *.exe
 
 # Go
