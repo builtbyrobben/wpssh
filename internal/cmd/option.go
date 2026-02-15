@@ -21,7 +21,9 @@ type OptionCmd struct {
 	Pluck  OptionPluckCmd  `cmd:"" help:"Pluck option value"`
 }
 
-type OptionGetCmd struct{ Key string `arg:"" help:"Option name"` }
+type OptionGetCmd struct {
+	Key string `arg:"" help:"Option name"`
+}
 type OptionUpdateCmd struct {
 	Key   string `arg:"" help:"Option name"`
 	Value string `arg:"" help:"Option value"`
@@ -30,8 +32,12 @@ type OptionAddCmd struct {
 	Key   string `arg:"" help:"Option name"`
 	Value string `arg:"" help:"Option value"`
 }
-type OptionDeleteCmd struct{ Key string `arg:"" help:"Option name"` }
-type OptionListCmd struct{ Search string `help:"Search pattern"` }
+type OptionDeleteCmd struct {
+	Key string `arg:"" help:"Option name"`
+}
+type OptionListCmd struct {
+	Search string `help:"Search pattern"`
+}
 type OptionPatchCmd struct {
 	Action  string `arg:"" help:"Patch action"`
 	Key     string `arg:"" help:"Option name"`

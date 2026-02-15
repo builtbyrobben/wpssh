@@ -25,7 +25,7 @@ type hostBucket struct {
 	currentDelay  time.Duration // Dynamic delay (may increase on errors).
 	nextAllowedAt time.Time     // Next earliest start time.
 	timingMu      sync.Mutex    // Protects nextAllowedAt and currentDelay.
-	sem           chan struct{}  // Semaphore for max concurrent connections.
+	sem           chan struct{} // Semaphore for max concurrent connections.
 }
 
 // RateLimiter enforces per-host connection spacing and concurrency limits.

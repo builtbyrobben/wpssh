@@ -11,9 +11,16 @@ type MenuCmd struct {
 	Item   MenuItemCmd   `cmd:"" help:"Manage menu items"`
 }
 
-type MenuListCmd struct{}
-type MenuCreateCmd struct{ Name string `arg:"" help:"Menu name"` }
-type MenuDeleteCmd struct{ ID int `arg:"" help:"Menu ID"` }
+type (
+	MenuListCmd   struct{}
+	MenuCreateCmd struct {
+		Name string `arg:"" help:"Menu name"`
+	}
+)
+
+type MenuDeleteCmd struct {
+	ID int `arg:"" help:"Menu ID"`
+}
 type MenuItemCmd struct {
 	List      MenuItemListCmd      `cmd:"" help:"List menu items"`
 	AddPost   MenuItemAddPostCmd   `cmd:"" name:"add-post" help:"Add post to menu"`
@@ -22,7 +29,9 @@ type MenuItemCmd struct {
 	Delete    MenuItemDeleteCmd    `cmd:"" help:"Delete menu item"`
 }
 
-type MenuItemListCmd struct{ Menu string `arg:"" help:"Menu name or ID"` }
+type MenuItemListCmd struct {
+	Menu string `arg:"" help:"Menu name or ID"`
+}
 type MenuItemAddPostCmd struct {
 	Menu string `arg:"" help:"Menu name or ID"`
 	ID   int    `arg:"" help:"Post ID"`
@@ -32,8 +41,12 @@ type MenuItemAddCustomCmd struct {
 	Title string `arg:"" help:"Link title"`
 	URL   string `arg:"" help:"Link URL"`
 }
-type MenuItemUpdateCmd struct{ ID int `arg:"" help:"Item ID"` }
-type MenuItemDeleteCmd struct{ ID int `arg:"" help:"Item ID"` }
+type MenuItemUpdateCmd struct {
+	ID int `arg:"" help:"Item ID"`
+}
+type MenuItemDeleteCmd struct {
+	ID int `arg:"" help:"Item ID"`
+}
 
 func (c *MenuListCmd) Run(g *Globals) error {
 	return execPassthrough(g, "menu", "list")

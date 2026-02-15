@@ -19,7 +19,7 @@ type Cache struct {
 // file is set to 0600 (owner read/write only).
 func New(dbPath string) (*Cache, error) {
 	dir := filepath.Dir(dbPath)
-	if err := os.MkdirAll(dir, 0700); err != nil {
+	if err := os.MkdirAll(dir, 0o700); err != nil {
 		return nil, fmt.Errorf("create cache dir: %w", err)
 	}
 
@@ -51,7 +51,7 @@ func New(dbPath string) (*Cache, error) {
 	}
 
 	// Set file permissions to 0600 (owner read/write only).
-	if err := os.Chmod(dbPath, 0600); err != nil {
+	if err := os.Chmod(dbPath, 0o600); err != nil {
 		db.Close()
 		return nil, fmt.Errorf("set cache db permissions: %w", err)
 	}

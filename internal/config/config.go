@@ -9,12 +9,12 @@ import (
 
 // Config holds the wpgo application configuration.
 type Config struct {
-	DefaultFormat    string                      `json:"default_format"`
-	DefaultSite      string                      `json:"default_site,omitempty"`
-	RateLimits       map[string]RateLimitEntry   `json:"rate_limits,omitempty"`
-	DefaultRateLimit RateLimitEntry              `json:"default_rate_limit"`
-	CacheTTLs        CacheTTLConfig              `json:"cache_ttls"`
-	Groups           map[string]GroupConfig       `json:"groups,omitempty"`
+	DefaultFormat    string                    `json:"default_format"`
+	DefaultSite      string                    `json:"default_site,omitempty"`
+	RateLimits       map[string]RateLimitEntry `json:"rate_limits,omitempty"`
+	DefaultRateLimit RateLimitEntry            `json:"default_rate_limit"`
+	CacheTTLs        CacheTTLConfig            `json:"cache_ttls"`
+	Groups           map[string]GroupConfig    `json:"groups,omitempty"`
 }
 
 // RateLimitEntry configures rate limiting for a canonical host.
@@ -63,7 +63,7 @@ func Load(path string) (*Config, error) {
 // Save writes the config to disk using atomic write.
 func Save(cfg *Config, path string) error {
 	dir := filepath.Dir(path)
-	if err := os.MkdirAll(dir, 0700); err != nil {
+	if err := os.MkdirAll(dir, 0o700); err != nil {
 		return err
 	}
 
@@ -74,7 +74,7 @@ func Save(cfg *Config, path string) error {
 	data = append(data, '\n')
 
 	tmp := path + ".tmp"
-	if err := os.WriteFile(tmp, data, 0600); err != nil {
+	if err := os.WriteFile(tmp, data, 0o600); err != nil {
 		return err
 	}
 	return os.Rename(tmp, path)

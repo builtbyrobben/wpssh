@@ -10,11 +10,14 @@ type CacheCmdGroup struct {
 	Type   CacheTypeCmd   `cmd:"" help:"Show cache type"`
 }
 
-type CacheFlushCmd struct{}
-type CacheGetCmd struct {
-	Key   string `arg:"" help:"Cache key"`
-	Group string `arg:"" optional:"" help:"Cache group"`
-}
+type (
+	CacheFlushCmd struct{}
+	CacheGetCmd   struct {
+		Key   string `arg:"" help:"Cache key"`
+		Group string `arg:"" optional:"" help:"Cache group"`
+	}
+)
+
 type CacheSetCmd struct {
 	Key   string `arg:"" help:"Cache key"`
 	Value string `arg:"" help:"Cache value"`

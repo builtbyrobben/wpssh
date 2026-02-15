@@ -9,13 +9,20 @@ type RoleCmd struct {
 	Exists RoleExistsCmd `cmd:"" help:"Check if role exists"`
 }
 
-type RoleListCmd struct{}
-type RoleCreateCmd struct {
-	Role        string `arg:"" help:"Role key"`
-	DisplayName string `arg:"" help:"Display name"`
+type (
+	RoleListCmd   struct{}
+	RoleCreateCmd struct {
+		Role        string `arg:"" help:"Role key"`
+		DisplayName string `arg:"" help:"Display name"`
+	}
+)
+
+type RoleDeleteCmd struct {
+	Role string `arg:"" help:"Role key"`
 }
-type RoleDeleteCmd struct{ Role string `arg:"" help:"Role key"` }
-type RoleExistsCmd struct{ Role string `arg:"" help:"Role key"` }
+type RoleExistsCmd struct {
+	Role string `arg:"" help:"Role key"`
+}
 
 func (c *RoleListCmd) Run(g *Globals) error {
 	return execPassthrough(g, "role", "list")

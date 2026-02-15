@@ -11,9 +11,9 @@ import (
 
 // Registry provides a merged view of SSH config entries + metadata overlay.
 type Registry struct {
-	sites        map[string]*Site   // alias → merged site
-	sorted       []*Site            // sorted by alias
-	canonicalMap map[string]string  // alias → "IP:port"
+	sites        map[string]*Site    // alias → merged site
+	sorted       []*Site             // sorted by alias
+	canonicalMap map[string]string   // alias → "IP:port"
 	userGroups   map[string][]string // group name → explicit aliases (from config)
 }
 

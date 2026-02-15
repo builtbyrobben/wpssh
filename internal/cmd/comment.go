@@ -19,17 +19,41 @@ type CommentCmd struct {
 	Count     CommentCountCmd     `cmd:"" help:"Count comments"`
 }
 
-type CommentListCmd struct{}
-type CommentGetCmd struct{ ID int `arg:"" help:"Comment ID"` }
-type CommentCreateCmd struct{}
-type CommentUpdateCmd struct{ ID int `arg:"" help:"Comment ID"` }
-type CommentDeleteCmd struct{ ID int `arg:"" help:"Comment ID"` }
-type CommentApproveCmd struct{ ID int `arg:"" help:"Comment ID"` }
-type CommentUnapproveCmd struct{ ID int `arg:"" help:"Comment ID"` }
-type CommentSpamCmd struct{ ID int `arg:"" help:"Comment ID"` }
-type CommentUnspamCmd struct{ ID int `arg:"" help:"Comment ID"` }
-type CommentTrashCmd struct{ ID int `arg:"" help:"Comment ID"` }
-type CommentUntrashCmd struct{ ID int `arg:"" help:"Comment ID"` }
+type (
+	CommentListCmd struct{}
+	CommentGetCmd  struct {
+		ID int `arg:"" help:"Comment ID"`
+	}
+)
+
+type (
+	CommentCreateCmd struct{}
+	CommentUpdateCmd struct {
+		ID int `arg:"" help:"Comment ID"`
+	}
+)
+
+type CommentDeleteCmd struct {
+	ID int `arg:"" help:"Comment ID"`
+}
+type CommentApproveCmd struct {
+	ID int `arg:"" help:"Comment ID"`
+}
+type CommentUnapproveCmd struct {
+	ID int `arg:"" help:"Comment ID"`
+}
+type CommentSpamCmd struct {
+	ID int `arg:"" help:"Comment ID"`
+}
+type CommentUnspamCmd struct {
+	ID int `arg:"" help:"Comment ID"`
+}
+type CommentTrashCmd struct {
+	ID int `arg:"" help:"Comment ID"`
+}
+type CommentUntrashCmd struct {
+	ID int `arg:"" help:"Comment ID"`
+}
 type CommentCountCmd struct{}
 
 func (c *CommentListCmd) Run(g *Globals) error {

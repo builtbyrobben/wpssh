@@ -24,17 +24,27 @@ type DBCmd struct {
 	Reset    DBResetCmd    `cmd:"" help:"Reset database"`
 }
 
-type DBExportCmd struct{ File string `arg:"" optional:"" help:"Export file path"` }
-type DBImportCmd struct{ File string `arg:"" help:"Import file path"` }
-type DBQueryCmd struct{ SQL string `arg:"" help:"SQL query"` }
-type DBSearchCmd struct{ Term string `arg:"" help:"Search string"` }
-type DBSizeCmd struct{}
-type DBTablesCmd struct{}
-type DBPrefixCmd struct{}
-type DBCheckCmd struct{}
-type DBRepairCmd struct{}
-type DBOptimizeCmd struct{}
-type DBResetCmd struct{}
+type DBExportCmd struct {
+	File string `arg:"" optional:"" help:"Export file path"`
+}
+type DBImportCmd struct {
+	File string `arg:"" help:"Import file path"`
+}
+type DBQueryCmd struct {
+	SQL string `arg:"" help:"SQL query"`
+}
+type DBSearchCmd struct {
+	Term string `arg:"" help:"Search string"`
+}
+type (
+	DBSizeCmd     struct{}
+	DBTablesCmd   struct{}
+	DBPrefixCmd   struct{}
+	DBCheckCmd    struct{}
+	DBRepairCmd   struct{}
+	DBOptimizeCmd struct{}
+	DBResetCmd    struct{}
+)
 
 func (c *DBExportCmd) Run(g *Globals) error {
 	rc, err := NewRunContext(g)

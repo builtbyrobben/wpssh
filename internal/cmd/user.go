@@ -23,28 +23,42 @@ type UserCmd struct {
 	Meta          UserMetaCmd          `cmd:"" help:"User meta management"`
 }
 
-type UserListCmd struct{ Role string `help:"Filter by role"` }
+type UserListCmd struct {
+	Role string `help:"Filter by role"`
+}
 type UserCreateCmd struct {
 	Login string `arg:"" help:"User login"`
 	Email string `arg:"" help:"User email"`
 	Role  string `help:"User role" default:"subscriber"`
 }
-type UserDeleteCmd struct{ User string `arg:"" help:"User ID or login"` }
-type UserGetCmd struct{ User string `arg:"" help:"User ID or login"` }
-type UserUpdateCmd struct{ User string `arg:"" help:"User ID or login"` }
+type UserDeleteCmd struct {
+	User string `arg:"" help:"User ID or login"`
+}
+type UserGetCmd struct {
+	User string `arg:"" help:"User ID or login"`
+}
+type UserUpdateCmd struct {
+	User string `arg:"" help:"User ID or login"`
+}
 type UserSetRoleCmd struct {
 	User string `arg:"" help:"User ID or login"`
 	Role string `arg:"" help:"Role to assign"`
 }
-type UserResetPasswordCmd struct{ User string `arg:"" help:"User ID or login"` }
-type UserExistsCmd struct{ User string `arg:"" help:"User ID or login"` }
+type UserResetPasswordCmd struct {
+	User string `arg:"" help:"User ID or login"`
+}
+type UserExistsCmd struct {
+	User string `arg:"" help:"User ID or login"`
+}
 type UserMetaCmd struct {
 	List   UserMetaListCmd   `cmd:"" help:"List user meta"`
 	Get    UserMetaGetCmd    `cmd:"" help:"Get user meta"`
 	Update UserMetaUpdateCmd `cmd:"" help:"Update user meta"`
 	Delete UserMetaDeleteCmd `cmd:"" help:"Delete user meta"`
 }
-type UserMetaListCmd struct{ User string `arg:"" help:"User ID"` }
+type UserMetaListCmd struct {
+	User string `arg:"" help:"User ID"`
+}
 type UserMetaGetCmd struct {
 	User string `arg:"" help:"User ID"`
 	Key  string `arg:"" help:"Meta key"`

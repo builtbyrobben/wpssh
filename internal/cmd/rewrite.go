@@ -8,9 +8,13 @@ type RewriteCmd struct {
 	Structure RewriteStructureCmd `cmd:"" help:"Update permalink structure"`
 }
 
-type RewriteFlushCmd struct{}
-type RewriteListCmd struct{}
-type RewriteStructureCmd struct{ Permastruct string `arg:"" help:"Permalink structure"` }
+type (
+	RewriteFlushCmd     struct{}
+	RewriteListCmd      struct{}
+	RewriteStructureCmd struct {
+		Permastruct string `arg:"" help:"Permalink structure"`
+	}
+)
 
 func (c *RewriteFlushCmd) Run(g *Globals) error {
 	return execPassthrough(g, "rewrite", "flush")

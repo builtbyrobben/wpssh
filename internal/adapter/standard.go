@@ -68,7 +68,7 @@ func (a *StandardAdapter) Download(ctx context.Context, client *internalssh.SSHC
 	if result.ExitCode != 0 {
 		return fmt.Errorf("download failed (exit %d): %s", result.ExitCode, result.Stderr)
 	}
-	if err := os.WriteFile(localPath, []byte(result.Stdout), 0644); err != nil {
+	if err := os.WriteFile(localPath, []byte(result.Stdout), 0o644); err != nil {
 		return fmt.Errorf("write local file: %w", err)
 	}
 	return nil
@@ -86,7 +86,7 @@ func siteToClientConfig(site *registry.Site) internalssh.ClientConfig {
 }
 
 // shellQuote wraps a string in single quotes for safe shell usage.
-// Single quotes inside the string are escaped as '\'' (end quote, escaped
+// Single quotes inside the string are escaped as '\” (end quote, escaped
 // literal quote, start quote).
 func shellQuote(s string) string {
 	result := "'"

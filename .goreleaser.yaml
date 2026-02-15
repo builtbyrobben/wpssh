@@ -1,0 +1,44 @@
+version: 2
+
+project_name: wpssh
+
+changelog:
+  disable: true
+
+builds:
+  - id: wpgo
+    main: ./cmd/wpgo
+    binary: wpgo
+    ldflags: >-
+      -s -w
+      -X main.version={{ .Tag }}
+      -X main.commit={{ .ShortCommit }}
+      -X main.date={{ .Date }}
+    env:
+      - CGO_ENABLED=0
+    targets:
+      - linux_amd64
+      - linux_arm64
+      - darwin_amd64
+      - darwin_arm64
+
+archives:
+  - builds:
+      - wpgo
+    format: tar.gz
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+
+checksum:
+  name_template: checksums.txt
+
+brews:
+  - repository:
+      owner: builtbyrobben
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+    folder: Formula
+    homepage: "https://github.com/builtbyrobben/wpssh"
+    description: "WordPress management over SSH"
+    license: "MIT"
+    test: |
+      system "#{bin}/wpgo", "--version"

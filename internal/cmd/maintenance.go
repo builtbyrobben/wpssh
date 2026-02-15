@@ -8,9 +8,11 @@ type MaintenanceCmd struct {
 	Status     MaintenanceStatusCmd     `cmd:"" help:"Show maintenance mode status"`
 }
 
-type MaintenanceActivateCmd struct{}
-type MaintenanceDeactivateCmd struct{}
-type MaintenanceStatusCmd struct{}
+type (
+	MaintenanceActivateCmd   struct{}
+	MaintenanceDeactivateCmd struct{}
+	MaintenanceStatusCmd     struct{}
+)
 
 func (c *MaintenanceActivateCmd) Run(g *Globals) error {
 	return execPassthrough(g, "maintenance-mode", "activate")

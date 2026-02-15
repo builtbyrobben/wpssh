@@ -8,11 +8,11 @@ import (
 
 // Command builds a wp-cli command string with proper shell escaping.
 type Command struct {
-	parts    []string
-	flags    map[string]string
+	parts     []string
+	flags     map[string]string
 	boolFlags []string
-	args     []string
-	format   string
+	args      []string
+	format    string
 }
 
 // New creates a new wp-cli command builder.
