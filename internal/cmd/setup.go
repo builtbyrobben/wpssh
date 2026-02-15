@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -176,9 +177,17 @@ func runInteractiveSetup(cfg *config.Config, in io.Reader, out io.Writer) (bool,
 			if name == "" {
 				break
 			}
+			if !isValidGroupName(name) {
+				fmt.Fprintln(p.w, "Invalid group name. Use only letters, digits, hyphens, and underscores (max 64 chars).")
+				continue
+			}
 
-			existing := cfg.Groups[name]
-			aliasesRaw, err := p.input("Aliases (comma-separated)", strings.Join(cfg.Groups[name].Aliases, ","))
+			existing, ok := cfg.Groups[name]
+			defaultAliases := ""
+			if ok {
+				defaultAliases = strings.Join(existing.Aliases, ",")
+			}
+			aliasesRaw, err := p.input("Aliases (comma-separated)", defaultAliases)
 			if err != nil {
 				return false, err
 			}
@@ -233,6 +242,12 @@ func printSetupSummary(out io.Writer, cfg *config.Config) {
 	fmt.Fprintf(out, "  default_format: %s\n", cfg.DefaultFormat)
 	fmt.Fprintf(out, "  default_rate_limit: delay=%s max_conns=%d\n", cfg.DefaultRateLimit.Delay, cfg.DefaultRateLimit.MaxConns)
 	fmt.Fprintf(out, "  groups: %d\n", len(cfg.Groups))
+}
+
+var validGroupName = regexp.MustCompile(`^[a-zA-Z0-9_-]+$`)
+
+func isValidGroupName(name string) bool {
+	return len(name) <= 64 && validGroupName.MatchString(name)
 }
 
 func parseCSV(s string) []string {
