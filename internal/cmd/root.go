@@ -4,6 +4,8 @@ package cmd
 type CLI struct {
 	Globals
 
+	Help        HelpCmd          `cmd:"" help:"Guided help by topic"`
+	Setup       SetupCmd         `cmd:"" help:"Interactive onboarding and config setup"`
 	Version     VersionCmd       `cmd:"" help:"Show wpgo version"`
 	Sites       SitesCmd         `cmd:"" help:"Manage site registry"`
 	Core        CoreCmd          `cmd:"" help:"WordPress core management"`
