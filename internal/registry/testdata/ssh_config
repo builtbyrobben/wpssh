@@ -1,0 +1,32 @@
+# Test SSH config fixture
+
+Host *
+    ServerAliveInterval 60
+    ServerAliveCountMax 3
+
+Host sitealpha
+    HostName 192.0.2.10
+    Port 37980
+    User sitealpha
+    IdentityFile ~/.ssh/id_rsa
+
+Host sitebeta
+    HostName 192.0.2.10
+    Port 37980
+    User sitebeta
+    IdentityFile ~/.ssh/id_rsa
+
+Host sitegamma
+    HostName sitegamma.ssh.wpengine.net
+    User sitegamma
+    IdentityFile ~/.ssh/example_wpengine_key
+
+Host mylinode
+    HostName 198.51.100.20
+    Port 22
+    User root
+    IdentityFile ~/.ssh/example_linode_key
+
+Host devsite
+    HostName dev.example.com
+    User deploy

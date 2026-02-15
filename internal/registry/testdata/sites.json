@@ -1,0 +1,20 @@
+{
+  "sites": {
+    "sitealpha": {
+      "wp_path": "~/public_html",
+      "host_type": "standard",
+      "groups": ["prime-vps", "client"],
+      "tags": {"client": "Example Client"}
+    },
+    "sitegamma": {
+      "wp_path": "/home/wpe-user/sites/sitegamma1",
+      "host_type": "wpengine",
+      "groups": ["wpengine", "client"]
+    },
+    "sitebeta": {
+      "wp_path": "~/public_html",
+      "groups": ["prime-vps", "client"],
+      "tags": {"client": "Client Site"}
+    }
+  }
+}

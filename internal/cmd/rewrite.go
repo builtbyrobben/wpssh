@@ -1,0 +1,25 @@
+package cmd
+
+// Rewrite commands
+
+type RewriteCmd struct {
+	Flush     RewriteFlushCmd     `cmd:"" help:"Flush rewrite rules"`
+	List      RewriteListCmd      `cmd:"" help:"List rewrite rules"`
+	Structure RewriteStructureCmd `cmd:"" help:"Update permalink structure"`
+}
+
+type RewriteFlushCmd struct{}
+type RewriteListCmd struct{}
+type RewriteStructureCmd struct{ Permastruct string `arg:"" help:"Permalink structure"` }
+
+func (c *RewriteFlushCmd) Run(g *Globals) error {
+	return execPassthrough(g, "rewrite", "flush")
+}
+
+func (c *RewriteListCmd) Run(g *Globals) error {
+	return execPassthrough(g, "rewrite", "list")
+}
+
+func (c *RewriteStructureCmd) Run(g *Globals) error {
+	return execPassthrough(g, "rewrite", "structure", c.Permastruct)
+}
