@@ -50,9 +50,11 @@ fmt: tools
 	@$(GOFUMPT) -w .
 
 fmt-check: tools
-	@$(GOIMPORTS) -local github.com/builtbyrobben/wpssh -w .
-	@$(GOFUMPT) -w .
-	@git diff --exit-code -- '*.go' go.mod go.sum
+	@UNFMT=$$($(GOIMPORTS) -local github.com/builtbyrobben/wpssh -l .); \
+	 UNFMT="$$UNFMT$$($(GOFUMPT) -l .)"; \
+	 if [ -n "$$UNFMT" ]; then \
+	   echo "Files need formatting:"; echo "$$UNFMT"; exit 1; \
+	 fi
 
 lint: tools
 	@$(GOLANGCI_LINT) run

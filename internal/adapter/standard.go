@@ -86,8 +86,11 @@ func siteToClientConfig(site *registry.Site) internalssh.ClientConfig {
 }
 
 // shellQuote wraps a string in single quotes for safe shell usage.
-// Single quotes inside the string are escaped as '\” (end quote, escaped
-// literal quote, start quote).
+// Embedded single quotes are escaped with the shell idiom:
+//
+//	end-quote + backslash-quote + start-quote  ('”'”')
+//
+// For example, “it's” becomes 'it'”'”'s'.
 func shellQuote(s string) string {
 	result := "'"
 	for _, c := range s {
