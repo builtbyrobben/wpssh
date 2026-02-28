@@ -25,30 +25,52 @@ type ThemeCmd struct {
 	AutoUpdates ThemeAutoUpdatesCmd `cmd:"" name:"auto-updates" help:"Manage auto-updates"`
 }
 
-type ThemeListCmd struct{ StatusFilter string `help:"Filter by status" name:"status"` }
+type ThemeListCmd struct {
+	StatusFilter string `help:"Filter by status" name:"status"`
+}
 type ThemeInstallCmd struct {
 	Theme    string `arg:"" help:"Theme slug"`
 	Activate bool   `help:"Activate after install"`
 }
-type ThemeActivateCmd struct{ Theme string `arg:"" help:"Theme slug"` }
-type ThemeDeleteCmd struct{ Theme string `arg:"" help:"Theme slug"` }
+type ThemeActivateCmd struct {
+	Theme string `arg:"" help:"Theme slug"`
+}
+type ThemeDeleteCmd struct {
+	Theme string `arg:"" help:"Theme slug"`
+}
 type ThemeUpdateCmd struct {
 	Theme string `arg:"" optional:"" help:"Theme slug"`
 	All   bool   `help:"Update all themes"`
 }
-type ThemeSearchCmd struct{ Term string `arg:"" help:"Search term"` }
-type ThemeGetCmd struct{ Theme string `arg:"" help:"Theme slug"` }
-type ThemeIsActiveCmd struct{ Theme string `arg:"" help:"Theme slug"` }
-type ThemeIsInstalledCmd struct{ Theme string `arg:"" help:"Theme slug"` }
-type ThemeStatusCmd struct{ Theme string `arg:"" optional:"" help:"Theme slug"` }
+type ThemeSearchCmd struct {
+	Term string `arg:"" help:"Search term"`
+}
+type ThemeGetCmd struct {
+	Theme string `arg:"" help:"Theme slug"`
+}
+type ThemeIsActiveCmd struct {
+	Theme string `arg:"" help:"Theme slug"`
+}
+type ThemeIsInstalledCmd struct {
+	Theme string `arg:"" help:"Theme slug"`
+}
+type ThemeStatusCmd struct {
+	Theme string `arg:"" optional:"" help:"Theme slug"`
+}
 type ThemeAutoUpdatesCmd struct {
 	Enable  ThemeAutoUpdatesEnableCmd  `cmd:"" help:"Enable auto-updates"`
 	Disable ThemeAutoUpdatesDisableCmd `cmd:"" help:"Disable auto-updates"`
 	Status  ThemeAutoUpdatesStatusCmd  `cmd:"" help:"Show auto-update status"`
 }
-type ThemeAutoUpdatesEnableCmd struct{ Theme string `arg:"" help:"Theme slug"` }
-type ThemeAutoUpdatesDisableCmd struct{ Theme string `arg:"" help:"Theme slug"` }
-type ThemeAutoUpdatesStatusCmd struct{ Theme string `arg:"" optional:"" help:"Theme slug"` }
+type ThemeAutoUpdatesEnableCmd struct {
+	Theme string `arg:"" help:"Theme slug"`
+}
+type ThemeAutoUpdatesDisableCmd struct {
+	Theme string `arg:"" help:"Theme slug"`
+}
+type ThemeAutoUpdatesStatusCmd struct {
+	Theme string `arg:"" optional:"" help:"Theme slug"`
+}
 
 func (c *ThemeListCmd) Run(g *Globals) error {
 	rc, err := NewRunContext(g)

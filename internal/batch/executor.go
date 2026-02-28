@@ -17,12 +17,12 @@ type CommandFunc func(ctx context.Context, site *registry.Site) (detail string, 
 
 // Options configures batch execution.
 type Options struct {
-	Concurrency    int         // Max parallel executions (default 1 = sequential)
-	Yes            bool        // --yes flag
-	AckDestructive bool        // --ack-destructive flag
-	DryRun         bool        // --dry-run: show what would run without executing
+	Concurrency    int  // Max parallel executions (default 1 = sequential)
+	Yes            bool // --yes flag
+	AckDestructive bool // --ack-destructive flag
+	DryRun         bool // --dry-run: show what would run without executing
 	Tier           safety.SafetyTier
-	CommandName    string      // Human-readable command description for progress display
+	CommandName    string // Human-readable command description for progress display
 }
 
 // SiteResult holds the outcome of a command executed on a single site.
@@ -38,7 +38,7 @@ type SiteResult struct {
 type ResultStatus int
 
 const (
-	StatusOK      ResultStatus = iota
+	StatusOK ResultStatus = iota
 	StatusFailed
 	StatusSkipped
 )

@@ -19,22 +19,34 @@ type PostCmd struct {
 	Meta   PostMetaCmd   `cmd:"" help:"Post meta management"`
 }
 
-type PostListCmd struct{ PostType string `help:"Post type" name:"post_type"` }
-type PostCreateCmd struct{ PostTitle string `help:"Post title" name:"post_title"` }
-type PostGetCmd struct{ ID int `arg:"" help:"Post ID"` }
-type PostUpdateCmd struct{ ID int `arg:"" help:"Post ID"` }
+type PostListCmd struct {
+	PostType string `help:"Post type" name:"post_type"`
+}
+type PostCreateCmd struct {
+	PostTitle string `help:"Post title" name:"post_title"`
+}
+type PostGetCmd struct {
+	ID int `arg:"" help:"Post ID"`
+}
+type PostUpdateCmd struct {
+	ID int `arg:"" help:"Post ID"`
+}
 type PostDeleteCmd struct {
 	ID    int  `arg:"" help:"Post ID"`
 	Force bool `help:"Skip trash"`
 }
-type PostExistsCmd struct{ ID int `arg:"" help:"Post ID"` }
+type PostExistsCmd struct {
+	ID int `arg:"" help:"Post ID"`
+}
 type PostMetaCmd struct {
 	List   PostMetaListCmd   `cmd:"" help:"List post meta"`
 	Get    PostMetaGetCmd    `cmd:"" help:"Get post meta"`
 	Update PostMetaUpdateCmd `cmd:"" help:"Update post meta"`
 	Delete PostMetaDeleteCmd `cmd:"" help:"Delete post meta"`
 }
-type PostMetaListCmd struct{ ID int `arg:"" help:"Post ID"` }
+type PostMetaListCmd struct {
+	ID int `arg:"" help:"Post ID"`
+}
 type PostMetaGetCmd struct {
 	ID  int    `arg:"" help:"Post ID"`
 	Key string `arg:"" help:"Meta key"`

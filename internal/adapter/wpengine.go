@@ -99,7 +99,7 @@ func (a *WPEngineAdapter) Download(ctx context.Context, client *internalssh.SSHC
 	if result.ExitCode != 0 {
 		return fmt.Errorf("download failed (exit %d): %s", result.ExitCode, result.Stderr)
 	}
-	if err := os.WriteFile(localPath, []byte(result.Stdout), 0644); err != nil {
+	if err := os.WriteFile(localPath, []byte(result.Stdout), 0o644); err != nil {
 		return fmt.Errorf("write local file: %w", err)
 	}
 	return nil

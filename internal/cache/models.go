@@ -4,12 +4,12 @@ import "time"
 
 // Default TTLs for cacheable command categories.
 const (
-	TTLPlugins  = 3600      // 1 hour
-	TTLThemes   = 3600      // 1 hour
-	TTLCore     = 86400     // 24 hours
-	TTLUsers    = 21600     // 6 hours
-	TTLOptions  = 1800      // 30 minutes
-	TTLSnapshot = 14400     // 4 hours
+	TTLPlugins  = 3600  // 1 hour
+	TTLThemes   = 3600  // 1 hour
+	TTLCore     = 86400 // 24 hours
+	TTLUsers    = 21600 // 6 hours
+	TTLOptions  = 1800  // 30 minutes
+	TTLSnapshot = 14400 // 4 hours
 )
 
 // Cache categories for invalidation grouping.

@@ -15,7 +15,9 @@ type TransientCmd struct {
 	List   TransientListCmd   `cmd:"" help:"List transients"`
 }
 
-type TransientGetCmd struct{ Key string `arg:"" help:"Transient key"` }
+type TransientGetCmd struct {
+	Key string `arg:"" help:"Transient key"`
+}
 type TransientSetCmd struct {
 	Key        string `arg:"" help:"Transient key"`
 	Value      string `arg:"" help:"Transient value"`

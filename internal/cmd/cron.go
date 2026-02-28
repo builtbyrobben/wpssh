@@ -23,22 +23,33 @@ type CronEventCmd struct {
 	Delete     CronEventDeleteCmd     `cmd:"" help:"Delete an event"`
 }
 
-type CronEventListCmd struct{}
-type CronEventRunCmd struct{ Hook string `arg:"" help:"Event hook"` }
+type (
+	CronEventListCmd struct{}
+	CronEventRunCmd  struct {
+		Hook string `arg:"" help:"Event hook"`
+	}
+)
+
 type CronEventScheduleCmd struct {
 	Hook       string `arg:"" help:"Event hook"`
 	NextRun    string `arg:"" help:"Next run time"`
 	Recurrence string `arg:"" optional:"" help:"Recurrence"`
 }
-type CronEventUnscheduleCmd struct{ Hook string `arg:"" help:"Event hook"` }
-type CronEventDeleteCmd struct{ Hook string `arg:"" help:"Event hook"` }
+type CronEventUnscheduleCmd struct {
+	Hook string `arg:"" help:"Event hook"`
+}
+type CronEventDeleteCmd struct {
+	Hook string `arg:"" help:"Event hook"`
+}
 
 type CronScheduleCmd struct {
 	List CronScheduleListCmd `cmd:"" help:"List schedules"`
 }
 
-type CronScheduleListCmd struct{}
-type CronTestCmd struct{}
+type (
+	CronScheduleListCmd struct{}
+	CronTestCmd         struct{}
+)
 
 func (c *CronEventListCmd) Run(g *Globals) error {
 	rc, err := NewRunContext(g)

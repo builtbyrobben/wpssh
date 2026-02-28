@@ -24,7 +24,7 @@ func DefaultPaths() Paths {
 // EnsureDirs creates all wpgo directories if they don't exist.
 func (p Paths) EnsureDirs() error {
 	for _, dir := range []string{p.ConfigDir, p.CacheDir, p.DataDir} {
-		if err := os.MkdirAll(dir, 0700); err != nil {
+		if err := os.MkdirAll(dir, 0o700); err != nil {
 			return err
 		}
 	}

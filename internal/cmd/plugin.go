@@ -27,32 +27,58 @@ type PluginCmd struct {
 	AutoUpdates     PluginAutoUpdatesCmd     `cmd:"" name:"auto-updates" help:"Manage auto-updates"`
 }
 
-type PluginListCmd struct{ StatusFilter string `help:"Filter by status" name:"status"` }
+type PluginListCmd struct {
+	StatusFilter string `help:"Filter by status" name:"status"`
+}
 type PluginInstallCmd struct {
 	Plugin   string `arg:"" help:"Plugin slug"`
 	Activate bool   `help:"Activate after install"`
 }
-type PluginActivateCmd struct{ Plugin string `arg:"" help:"Plugin slug"` }
-type PluginDeactivateCmd struct{ Plugin string `arg:"" help:"Plugin slug"` }
-type PluginDeleteCmd struct{ Plugin string `arg:"" help:"Plugin slug"` }
+type PluginActivateCmd struct {
+	Plugin string `arg:"" help:"Plugin slug"`
+}
+type PluginDeactivateCmd struct {
+	Plugin string `arg:"" help:"Plugin slug"`
+}
+type PluginDeleteCmd struct {
+	Plugin string `arg:"" help:"Plugin slug"`
+}
 type PluginUpdateCmd struct {
 	Plugin string `arg:"" optional:"" help:"Plugin slug"`
 	All    bool   `help:"Update all plugins"`
 }
-type PluginSearchCmd struct{ Term string `arg:"" help:"Search term"` }
-type PluginGetCmd struct{ Plugin string `arg:"" help:"Plugin slug"` }
-type PluginIsActiveCmd struct{ Plugin string `arg:"" help:"Plugin slug"` }
-type PluginIsInstalledCmd struct{ Plugin string `arg:"" help:"Plugin slug"` }
-type PluginStatusCmd struct{ Plugin string `arg:"" optional:"" help:"Plugin slug"` }
-type PluginVerifyChecksumsCmd struct{ Plugin string `arg:"" optional:"" help:"Plugin slug"` }
+type PluginSearchCmd struct {
+	Term string `arg:"" help:"Search term"`
+}
+type PluginGetCmd struct {
+	Plugin string `arg:"" help:"Plugin slug"`
+}
+type PluginIsActiveCmd struct {
+	Plugin string `arg:"" help:"Plugin slug"`
+}
+type PluginIsInstalledCmd struct {
+	Plugin string `arg:"" help:"Plugin slug"`
+}
+type PluginStatusCmd struct {
+	Plugin string `arg:"" optional:"" help:"Plugin slug"`
+}
+type PluginVerifyChecksumsCmd struct {
+	Plugin string `arg:"" optional:"" help:"Plugin slug"`
+}
 type PluginAutoUpdatesCmd struct {
 	Enable  PluginAutoUpdatesEnableCmd  `cmd:"" help:"Enable auto-updates"`
 	Disable PluginAutoUpdatesDisableCmd `cmd:"" help:"Disable auto-updates"`
 	Status  PluginAutoUpdatesStatusCmd  `cmd:"" help:"Show auto-update status"`
 }
-type PluginAutoUpdatesEnableCmd struct{ Plugin string `arg:"" help:"Plugin slug"` }
-type PluginAutoUpdatesDisableCmd struct{ Plugin string `arg:"" help:"Plugin slug"` }
-type PluginAutoUpdatesStatusCmd struct{ Plugin string `arg:"" optional:"" help:"Plugin slug"` }
+type PluginAutoUpdatesEnableCmd struct {
+	Plugin string `arg:"" help:"Plugin slug"`
+}
+type PluginAutoUpdatesDisableCmd struct {
+	Plugin string `arg:"" help:"Plugin slug"`
+}
+type PluginAutoUpdatesStatusCmd struct {
+	Plugin string `arg:"" optional:"" help:"Plugin slug"`
+}
 
 func (c *PluginListCmd) Run(g *Globals) error {
 	rc, err := NewRunContext(g)

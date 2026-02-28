@@ -11,15 +11,23 @@ type ConfigCmdGroup struct {
 	Path   ConfigPathCmd   `cmd:"" help:"Show wp-config.php path"`
 }
 
-type ConfigGetCmd struct{ Name string `arg:"" help:"Constant name"` }
+type ConfigGetCmd struct {
+	Name string `arg:"" help:"Constant name"`
+}
 type ConfigSetCmd struct {
 	Name  string `arg:"" help:"Constant name"`
 	Value string `arg:"" help:"Constant value"`
 }
-type ConfigDeleteCmd struct{ Name string `arg:"" help:"Constant name"` }
-type ConfigHasCmd struct{ Name string `arg:"" help:"Constant name"` }
-type ConfigListCmd struct{}
-type ConfigPathCmd struct{}
+type ConfigDeleteCmd struct {
+	Name string `arg:"" help:"Constant name"`
+}
+type ConfigHasCmd struct {
+	Name string `arg:"" help:"Constant name"`
+}
+type (
+	ConfigListCmd struct{}
+	ConfigPathCmd struct{}
+)
 
 func (c *ConfigGetCmd) Run(g *Globals) error {
 	return execPassthrough(g, "config", "get", c.Name)

@@ -62,7 +62,7 @@ func LoadMetadata(path string) (*Metadata, error) {
 // (write to temp file, then rename).
 func SaveMetadata(m *Metadata, path string) error {
 	dir := filepath.Dir(path)
-	if err := os.MkdirAll(dir, 0700); err != nil {
+	if err := os.MkdirAll(dir, 0o700); err != nil {
 		return err
 	}
 
@@ -74,7 +74,7 @@ func SaveMetadata(m *Metadata, path string) error {
 
 	// Atomic write: temp file + rename.
 	tmp := path + ".tmp"
-	if err := os.WriteFile(tmp, data, 0600); err != nil {
+	if err := os.WriteFile(tmp, data, 0o600); err != nil {
 		return err
 	}
 	return os.Rename(tmp, path)

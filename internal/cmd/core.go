@@ -20,11 +20,18 @@ type CoreCmd struct {
 	IsInstalled     CoreIsInstalledCmd     `cmd:"" name:"is-installed" help:"Check if WP is installed"`
 }
 
-type CoreVersionCmd struct{}
-type CoreCheckUpdateCmd struct{}
-type CoreUpdateCmd struct{ Version string `help:"Version to update to"` }
-type CoreVerifyChecksumsCmd struct{}
-type CoreIsInstalledCmd struct{}
+type (
+	CoreVersionCmd     struct{}
+	CoreCheckUpdateCmd struct{}
+	CoreUpdateCmd      struct {
+		Version string `help:"Version to update to"`
+	}
+)
+
+type (
+	CoreVerifyChecksumsCmd struct{}
+	CoreIsInstalledCmd     struct{}
+)
 
 func (c *CoreVersionCmd) Run(g *Globals) error {
 	rc, err := NewRunContext(g)

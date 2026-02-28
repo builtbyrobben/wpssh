@@ -22,3 +22,6 @@ coverage.html
 
 # Build
 dist/
+
+# Dev tools
+.tools/

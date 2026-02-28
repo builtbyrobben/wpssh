@@ -15,7 +15,9 @@ type MediaCmd struct {
 	ImageSize  MediaImageSizeCmd  `cmd:"" name:"image-size" help:"List image sizes"`
 }
 
-type MediaImportCmd struct{ File string `arg:"" help:"File or URL"` }
+type MediaImportCmd struct {
+	File string `arg:"" help:"File or URL"`
+}
 type MediaRegenerateCmd struct {
 	ID  int  `arg:"" optional:"" help:"Attachment ID"`
 	All bool `help:"Regenerate all"`

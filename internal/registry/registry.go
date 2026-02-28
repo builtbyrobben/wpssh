@@ -9,11 +9,13 @@ import (
 	"strings"
 )
 
+const hostTypeStandard = "standard"
+
 // Registry provides a merged view of SSH config entries + metadata overlay.
 type Registry struct {
-	sites        map[string]*Site   // alias → merged site
-	sorted       []*Site            // sorted by alias
-	canonicalMap map[string]string  // alias → "IP:port"
+	sites        map[string]*Site    // alias → merged site
+	sorted       []*Site             // sorted by alias
+	canonicalMap map[string]string   // alias → "IP:port"
 	userGroups   map[string][]string // group name → explicit aliases (from config)
 }
 
@@ -71,7 +73,7 @@ func NewRegistry(opts RegistryOptions) (*Registry, error) {
 			User:         entry.User,
 			IdentityFile: entry.IdentityFile,
 			WPPath:       "~/public_html", // sensible default
-			HostType:     "standard",
+			HostType:     hostTypeStandard,
 			Tags:         make(map[string]string),
 		}
 
@@ -151,7 +153,7 @@ func (r *Registry) Len() int {
 // Returns the overlay host_type if explicitly set, otherwise auto-detects.
 func detectHostType(site *Site) string {
 	// If explicitly set to something other than "auto" and "standard", respect it.
-	if site.HostType != "" && site.HostType != "auto" && site.HostType != "standard" {
+	if site.HostType != "" && site.HostType != "auto" && site.HostType != hostTypeStandard {
 		return site.HostType
 	}
 
@@ -161,9 +163,9 @@ func detectHostType(site *Site) string {
 	}
 	// cPanel on Prime VPS.
 	if hostname == "192.0.2.10" {
-		return "standard"
+		return hostTypeStandard
 	}
-	return "standard"
+	return hostTypeStandard
 }
 
 // resolveCanonicalHost resolves a hostname + port to "IP:port" for rate limiting.

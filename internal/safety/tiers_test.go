@@ -192,8 +192,8 @@ func TestSafetyTierString(t *testing.T) {
 func TestCheckBatchSafetyReadAlwaysAllowed(t *testing.T) {
 	// Read tier passes with any combination of flags.
 	for _, tc := range []struct {
-		yes  bool
-		ack  bool
+		yes bool
+		ack bool
 	}{
 		{false, false},
 		{true, false},

@@ -21,8 +21,10 @@ const createSiteSnapshots = `CREATE TABLE IF NOT EXISTS site_snapshots (
     last_checked  DATETIME
 )`
 
-const createIdxCategory = `CREATE INDEX IF NOT EXISTS idx_cache_category ON cache_entries(site_alias, category)`
-const createIdxExpiry = `CREATE INDEX IF NOT EXISTS idx_cache_expiry ON cache_entries(fetched_at, ttl_seconds)`
+const (
+	createIdxCategory = `CREATE INDEX IF NOT EXISTS idx_cache_category ON cache_entries(site_alias, category)`
+	createIdxExpiry   = `CREATE INDEX IF NOT EXISTS idx_cache_expiry ON cache_entries(fetched_at, ttl_seconds)`
+)
 
 const queryGetEntry = `SELECT site_alias, cache_key, command, data, fetched_at, ttl_seconds, category
     FROM cache_entries

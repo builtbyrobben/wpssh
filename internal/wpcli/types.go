@@ -3,17 +3,17 @@ package wpcli
 // Plugin represents a WordPress plugin as returned by wp plugin list --format=json.
 type Plugin struct {
 	Name          string `json:"name"`
-	Status        string `json:"status"`                   // active, inactive, must-use, dropin
-	Update        string `json:"update"`                   // available, none
+	Status        string `json:"status"` // active, inactive, must-use, dropin
+	Update        string `json:"update"` // available, none
 	Version       string `json:"version"`
 	UpdateVersion string `json:"update_version,omitempty"`
-	AutoUpdate    string `json:"auto_update"`              // on, off
+	AutoUpdate    string `json:"auto_update"` // on, off
 }
 
 // Theme represents a WordPress theme as returned by wp theme list --format=json.
 type Theme struct {
 	Name       string `json:"name"`
-	Status     string `json:"status"`      // active, inactive, parent
+	Status     string `json:"status"` // active, inactive, parent
 	Update     string `json:"update"`
 	Version    string `json:"version"`
 	AutoUpdate string `json:"auto_update"`
@@ -25,7 +25,7 @@ type User struct {
 	UserLogin      string `json:"user_login"`
 	DisplayName    string `json:"display_name"`
 	UserEmail      string `json:"user_email"`
-	Roles          string `json:"roles"`           // comma-separated
+	Roles          string `json:"roles"` // comma-separated
 	UserRegistered string `json:"user_registered"`
 }
 

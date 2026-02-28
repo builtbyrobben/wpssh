@@ -74,7 +74,7 @@ func TestLoad_FromFile(t *testing.T) {
     "staging": {"aliases": ["stage1", "stage2"]}
   }
 }`
-	if err := os.WriteFile(cfgPath, []byte(content), 0600); err != nil {
+	if err := os.WriteFile(cfgPath, []byte(content), 0o600); err != nil {
 		t.Fatalf("WriteFile: %v", err)
 	}
 
