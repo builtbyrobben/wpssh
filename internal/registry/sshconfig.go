@@ -101,6 +101,10 @@ func expandHome(path string) string {
 	if !strings.HasPrefix(path, "~") {
 		return path
 	}
+	if path != "~" && !strings.HasPrefix(path, "~/") {
+		// Preserve "~user/..." paths for SSH/OpenSSH to resolve.
+		return path
+	}
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return path

@@ -130,6 +130,22 @@ func TestCacheKeyBoolFlags(t *testing.T) {
 	}
 }
 
+func TestCacheKeyIncludesArgs(t *testing.T) {
+	key := New("plugin", "get").Arg("akismet").Format("json").CacheKey()
+	want := "plugin get 'akismet':--format=json"
+	if key != want {
+		t.Errorf("CacheKey() = %q, want %q", key, want)
+	}
+}
+
+func TestCacheKeyDifferentArgsDoNotCollide(t *testing.T) {
+	key1 := New("plugin", "get").Arg("akismet").Format("json").CacheKey()
+	key2 := New("plugin", "get").Arg("hello-dolly").Format("json").CacheKey()
+	if key1 == key2 {
+		t.Errorf("CacheKey() collided for different args: %q", key1)
+	}
+}
+
 func TestShellEscapeFunction(t *testing.T) {
 	tests := []struct {
 		input string

@@ -88,11 +88,29 @@ func mergeConfig(defaults, user Config) Config {
 	if user.RateLimits == nil {
 		user.RateLimits = defaults.RateLimits
 	}
-	if user.DefaultRateLimit.MaxConns == 0 {
-		user.DefaultRateLimit = defaults.DefaultRateLimit
+	if user.DefaultRateLimit.Delay == 0 {
+		user.DefaultRateLimit.Delay = defaults.DefaultRateLimit.Delay
 	}
-	if user.CacheTTLs == (CacheTTLConfig{}) {
-		user.CacheTTLs = defaults.CacheTTLs
+	if user.DefaultRateLimit.MaxConns == 0 {
+		user.DefaultRateLimit.MaxConns = defaults.DefaultRateLimit.MaxConns
+	}
+	if user.CacheTTLs.Plugins == 0 {
+		user.CacheTTLs.Plugins = defaults.CacheTTLs.Plugins
+	}
+	if user.CacheTTLs.Themes == 0 {
+		user.CacheTTLs.Themes = defaults.CacheTTLs.Themes
+	}
+	if user.CacheTTLs.Core == 0 {
+		user.CacheTTLs.Core = defaults.CacheTTLs.Core
+	}
+	if user.CacheTTLs.Users == 0 {
+		user.CacheTTLs.Users = defaults.CacheTTLs.Users
+	}
+	if user.CacheTTLs.Options == 0 {
+		user.CacheTTLs.Options = defaults.CacheTTLs.Options
+	}
+	if user.CacheTTLs.Snapshot == 0 {
+		user.CacheTTLs.Snapshot = defaults.CacheTTLs.Snapshot
 	}
 	if user.Groups == nil {
 		user.Groups = defaults.Groups

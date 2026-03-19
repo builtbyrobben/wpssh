@@ -103,8 +103,13 @@ func (c *Command) Build(wpPath string) string {
 func (c *Command) CacheKey() string {
 	var parts []string
 
-	// Command parts
-	cmdPart := strings.Join(c.parts, " ")
+	// Command parts + positional args (escaped for deterministic separation).
+	cmdTokens := make([]string, 0, len(c.parts)+len(c.args))
+	cmdTokens = append(cmdTokens, c.parts...)
+	for _, a := range c.args {
+		cmdTokens = append(cmdTokens, shellEscape(a))
+	}
+	cmdPart := strings.Join(cmdTokens, " ")
 
 	// Collect all flags into a sorted list
 	var flagParts []string

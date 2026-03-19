@@ -578,6 +578,12 @@ func TestExpandHome(t *testing.T) {
 	if got != "/absolute/path" {
 		t.Errorf("expandHome absolute: got %q", got)
 	}
+
+	// "~user" should not be rewritten to the current user's home.
+	got = expandHome("~otheruser/.ssh/id_rsa")
+	if got != "~otheruser/.ssh/id_rsa" {
+		t.Errorf("expandHome ~user: got %q", got)
+	}
 }
 
 func findEntry(entries []SSHEntry, alias string) *SSHEntry {

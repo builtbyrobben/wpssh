@@ -247,3 +247,55 @@ func TestMergeConfig(t *testing.T) {
 		t.Errorf("cache TTLs should be from defaults")
 	}
 }
+
+func TestMergeConfig_PartialDefaultRateLimit(t *testing.T) {
+	defaults := DefaultConfig()
+
+	user := Config{
+		DefaultRateLimit: RateLimitEntry{
+			MaxConns: 10,
+			// Delay left zero intentionally; should fall back to default.
+		},
+	}
+
+	merged := mergeConfig(defaults, user)
+
+	if merged.DefaultRateLimit.MaxConns != 10 {
+		t.Errorf("max_conns: got %d, want %d", merged.DefaultRateLimit.MaxConns, 10)
+	}
+	if merged.DefaultRateLimit.Delay != defaults.DefaultRateLimit.Delay {
+		t.Errorf("delay: got %v, want %v", merged.DefaultRateLimit.Delay, defaults.DefaultRateLimit.Delay)
+	}
+}
+
+func TestMergeConfig_PartialCacheTTLs(t *testing.T) {
+	defaults := DefaultConfig()
+
+	user := Config{
+		CacheTTLs: CacheTTLConfig{
+			Plugins: 2 * time.Hour,
+			// Other TTLs left zero intentionally; should fall back to defaults.
+		},
+	}
+
+	merged := mergeConfig(defaults, user)
+
+	if merged.CacheTTLs.Plugins != 2*time.Hour {
+		t.Errorf("plugins TTL: got %v, want %v", merged.CacheTTLs.Plugins, 2*time.Hour)
+	}
+	if merged.CacheTTLs.Themes != defaults.CacheTTLs.Themes {
+		t.Errorf("themes TTL: got %v, want %v", merged.CacheTTLs.Themes, defaults.CacheTTLs.Themes)
+	}
+	if merged.CacheTTLs.Core != defaults.CacheTTLs.Core {
+		t.Errorf("core TTL: got %v, want %v", merged.CacheTTLs.Core, defaults.CacheTTLs.Core)
+	}
+	if merged.CacheTTLs.Users != defaults.CacheTTLs.Users {
+		t.Errorf("users TTL: got %v, want %v", merged.CacheTTLs.Users, defaults.CacheTTLs.Users)
+	}
+	if merged.CacheTTLs.Options != defaults.CacheTTLs.Options {
+		t.Errorf("options TTL: got %v, want %v", merged.CacheTTLs.Options, defaults.CacheTTLs.Options)
+	}
+	if merged.CacheTTLs.Snapshot != defaults.CacheTTLs.Snapshot {
+		t.Errorf("snapshot TTL: got %v, want %v", merged.CacheTTLs.Snapshot, defaults.CacheTTLs.Snapshot)
+	}
+}
