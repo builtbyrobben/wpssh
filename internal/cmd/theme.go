@@ -1,11 +1,8 @@
 package cmd
 
 import (
-	"context"
-	"encoding/json"
-	"fmt"
-
 	"github.com/builtbyrobben/wpssh/internal/cache"
+	"github.com/builtbyrobben/wpssh/internal/registry"
 	"github.com/builtbyrobben/wpssh/internal/wpcli"
 )
 
@@ -73,207 +70,59 @@ type ThemeAutoUpdatesStatusCmd struct {
 }
 
 func (c *ThemeListCmd) Run(g *Globals) error {
-	rc, err := NewRunContext(g)
-	if err != nil {
-		return err
-	}
-	defer rc.Close()
-
-	site, err := rc.ResolveSite()
-	if err != nil {
-		return err
-	}
-
-	builder := wpcli.New("theme", "list").Format("json")
-	if c.StatusFilter != "" {
-		builder.Flag("status", c.StatusFilter)
-	}
-	cacheKey := builder.CacheKey()
-
-	// Check cache first.
-	if cached := rc.CacheGet(site.Alias, cacheKey); cached != "" {
-		themes, err := wpcli.ParseJSON[wpcli.Theme](cached)
-		if err == nil {
-			return rc.Formatter.Format(themes)
+	return runStructuredListCommand[wpcli.Theme](g, "theme list", cache.CategoryThemes, func(*registry.Site) *wpcli.Command {
+		builder := wpcli.New("theme", "list").Format("json")
+		if c.StatusFilter != "" {
+			builder.Flag("status", c.StatusFilter)
 		}
-	}
-
-	cmd := builder.Build(site.WPPath)
-	result, err := rc.ExecWP(context.Background(), site, cmd)
-	if err != nil {
-		return err
-	}
-	if result.ExitCode != 0 {
-		return fmt.Errorf("wp theme list: %s", result.Stderr)
-	}
-
-	themes, err := wpcli.ParseJSON[wpcli.Theme](result.Stdout)
-	if err != nil {
-		return err
-	}
-
-	// Store in cache.
-	if data, err := json.Marshal(themes); err == nil {
-		rc.CacheSet(site.Alias, cacheKey, "theme list", string(data), cache.CategoryThemes, cache.TTLThemes)
-	}
-
-	return rc.Formatter.Format(themes)
+		return builder
+	})
 }
 
 func (c *ThemeInstallCmd) Run(g *Globals) error {
-	rc, err := NewRunContext(g)
-	if err != nil {
-		return err
-	}
-	defer rc.Close()
-	site, err := rc.ResolveSite()
-	if err != nil {
-		return err
-	}
-
-	builder := wpcli.New("theme", "install").Arg(c.Theme)
-	if c.Activate {
-		builder.BoolFlag("activate")
-	}
-	result, err := rc.ExecWP(context.Background(), site, builder.Build(site.WPPath))
-	if err != nil {
-		return err
-	}
-	if result.ExitCode != 0 {
-		return fmt.Errorf("wp theme install: %s", result.Stderr)
-	}
-	rc.CacheInvalidate(site.Alias, []string{cache.CategoryThemes, cache.CategorySnapshot})
-	fmt.Fprintln(rc.Stdout, result.Stdout)
-	return nil
+	return runWPCommand(g, "theme install", []string{cache.CategoryThemes, cache.CategorySnapshot}, func(*registry.Site) *wpcli.Command {
+		builder := wpcli.New("theme", "install").Arg(c.Theme)
+		if c.Activate {
+			builder.BoolFlag("activate")
+		}
+		return builder
+	})
 }
 
 func (c *ThemeActivateCmd) Run(g *Globals) error {
-	rc, err := NewRunContext(g)
-	if err != nil {
-		return err
-	}
-	defer rc.Close()
-	site, err := rc.ResolveSite()
-	if err != nil {
-		return err
-	}
-
-	result, err := rc.ExecWP(context.Background(), site,
-		wpcli.New("theme", "activate").Arg(c.Theme).Build(site.WPPath))
-	if err != nil {
-		return err
-	}
-	if result.ExitCode != 0 {
-		return fmt.Errorf("wp theme activate: %s", result.Stderr)
-	}
-	rc.CacheInvalidate(site.Alias, []string{cache.CategoryThemes, cache.CategorySnapshot})
-	fmt.Fprintln(rc.Stdout, result.Stdout)
-	return nil
+	return runWPCommand(g, "theme activate", []string{cache.CategoryThemes, cache.CategorySnapshot}, func(*registry.Site) *wpcli.Command {
+		return wpcli.New("theme", "activate").Arg(c.Theme)
+	})
 }
 
 func (c *ThemeDeleteCmd) Run(g *Globals) error {
-	rc, err := NewRunContext(g)
-	if err != nil {
-		return err
-	}
-	defer rc.Close()
-	site, err := rc.ResolveSite()
-	if err != nil {
-		return err
-	}
-
-	result, err := rc.ExecWP(context.Background(), site,
-		wpcli.New("theme", "delete").Arg(c.Theme).Build(site.WPPath))
-	if err != nil {
-		return err
-	}
-	if result.ExitCode != 0 {
-		return fmt.Errorf("wp theme delete: %s", result.Stderr)
-	}
-	rc.CacheInvalidate(site.Alias, []string{cache.CategoryThemes, cache.CategorySnapshot})
-	fmt.Fprintln(rc.Stdout, result.Stdout)
-	return nil
+	return runWPCommand(g, "theme delete", []string{cache.CategoryThemes, cache.CategorySnapshot}, func(*registry.Site) *wpcli.Command {
+		return wpcli.New("theme", "delete").Arg(c.Theme)
+	})
 }
 
 func (c *ThemeUpdateCmd) Run(g *Globals) error {
-	rc, err := NewRunContext(g)
-	if err != nil {
-		return err
-	}
-	defer rc.Close()
-	site, err := rc.ResolveSite()
-	if err != nil {
-		return err
-	}
-
-	builder := wpcli.New("theme", "update")
-	if c.All {
-		builder.BoolFlag("all")
-	} else if c.Theme != "" {
-		builder.Arg(c.Theme)
-	}
-	result, err := rc.ExecWP(context.Background(), site, builder.Build(site.WPPath))
-	if err != nil {
-		return err
-	}
-	if result.ExitCode != 0 {
-		return fmt.Errorf("wp theme update: %s", result.Stderr)
-	}
-	rc.CacheInvalidate(site.Alias, []string{cache.CategoryThemes, cache.CategorySnapshot})
-	fmt.Fprintln(rc.Stdout, result.Stdout)
-	return nil
+	return runWPCommand(g, "theme update", []string{cache.CategoryThemes, cache.CategorySnapshot}, func(*registry.Site) *wpcli.Command {
+		builder := wpcli.New("theme", "update")
+		if c.All {
+			builder.BoolFlag("all")
+		} else if c.Theme != "" {
+			builder.Arg(c.Theme)
+		}
+		return builder
+	})
 }
 
 func (c *ThemeSearchCmd) Run(g *Globals) error {
-	rc, err := NewRunContext(g)
-	if err != nil {
-		return err
-	}
-	defer rc.Close()
-	site, err := rc.ResolveSite()
-	if err != nil {
-		return err
-	}
-
-	result, err := rc.ExecWP(context.Background(), site,
-		wpcli.New("theme", "search").Arg(c.Term).Format("json").Build(site.WPPath))
-	if err != nil {
-		return err
-	}
-	if result.ExitCode != 0 {
-		return fmt.Errorf("wp theme search: %s", result.Stderr)
-	}
-	themes, err := wpcli.ParseJSON[wpcli.Theme](result.Stdout)
-	if err != nil {
-		return err
-	}
-	return rc.Formatter.Format(themes)
+	return runStructuredListCommand[wpcli.Theme](g, "theme search", "", func(*registry.Site) *wpcli.Command {
+		return wpcli.New("theme", "search").Arg(c.Term).Format("json")
+	})
 }
 
 func (c *ThemeGetCmd) Run(g *Globals) error {
-	rc, err := NewRunContext(g)
-	if err != nil {
-		return err
-	}
-	defer rc.Close()
-	site, err := rc.ResolveSite()
-	if err != nil {
-		return err
-	}
-
-	result, err := rc.ExecWP(context.Background(), site,
-		wpcli.New("theme", "get").Arg(c.Theme).Format("json").Build(site.WPPath))
-	if err != nil {
-		return err
-	}
-	if result.ExitCode != 0 {
-		return fmt.Errorf("wp theme get: %s", result.Stderr)
-	}
-	theme, err := wpcli.ParseSingle[wpcli.Theme](result.Stdout)
-	if err != nil {
-		return err
-	}
-	return rc.Formatter.Format(theme)
+	return runStructuredSingleCommand[wpcli.Theme](g, "theme get", func(*registry.Site) *wpcli.Command {
+		return wpcli.New("theme", "get").Arg(c.Theme).Format("json")
+	})
 }
 
 func (c *ThemeIsActiveCmd) Run(g *Globals) error {
@@ -289,51 +138,15 @@ func (c *ThemeStatusCmd) Run(g *Globals) error {
 }
 
 func (c *ThemeAutoUpdatesEnableCmd) Run(g *Globals) error {
-	rc, err := NewRunContext(g)
-	if err != nil {
-		return err
-	}
-	defer rc.Close()
-	site, err := rc.ResolveSite()
-	if err != nil {
-		return err
-	}
-
-	result, err := rc.ExecWP(context.Background(), site,
-		wpcli.New("theme", "auto-updates", "enable").Arg(c.Theme).Build(site.WPPath))
-	if err != nil {
-		return err
-	}
-	if result.ExitCode != 0 {
-		return fmt.Errorf("wp theme auto-updates enable: %s", result.Stderr)
-	}
-	rc.CacheInvalidate(site.Alias, []string{cache.CategoryThemes})
-	fmt.Fprintln(rc.Stdout, result.Stdout)
-	return nil
+	return runWPCommand(g, "theme auto-updates enable", []string{cache.CategoryThemes}, func(*registry.Site) *wpcli.Command {
+		return wpcli.New("theme", "auto-updates", "enable").Arg(c.Theme)
+	})
 }
 
 func (c *ThemeAutoUpdatesDisableCmd) Run(g *Globals) error {
-	rc, err := NewRunContext(g)
-	if err != nil {
-		return err
-	}
-	defer rc.Close()
-	site, err := rc.ResolveSite()
-	if err != nil {
-		return err
-	}
-
-	result, err := rc.ExecWP(context.Background(), site,
-		wpcli.New("theme", "auto-updates", "disable").Arg(c.Theme).Build(site.WPPath))
-	if err != nil {
-		return err
-	}
-	if result.ExitCode != 0 {
-		return fmt.Errorf("wp theme auto-updates disable: %s", result.Stderr)
-	}
-	rc.CacheInvalidate(site.Alias, []string{cache.CategoryThemes})
-	fmt.Fprintln(rc.Stdout, result.Stdout)
-	return nil
+	return runWPCommand(g, "theme auto-updates disable", []string{cache.CategoryThemes}, func(*registry.Site) *wpcli.Command {
+		return wpcli.New("theme", "auto-updates", "disable").Arg(c.Theme)
+	})
 }
 
 func (c *ThemeAutoUpdatesStatusCmd) Run(g *Globals) error {

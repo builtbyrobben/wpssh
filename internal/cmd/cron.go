@@ -1,9 +1,7 @@
 package cmd
 
 import (
-	"context"
-	"fmt"
-
+	"github.com/builtbyrobben/wpssh/internal/registry"
 	"github.com/builtbyrobben/wpssh/internal/wpcli"
 )
 
@@ -52,29 +50,9 @@ type (
 )
 
 func (c *CronEventListCmd) Run(g *Globals) error {
-	rc, err := NewRunContext(g)
-	if err != nil {
-		return err
-	}
-	defer rc.Close()
-	site, err := rc.ResolveSite()
-	if err != nil {
-		return err
-	}
-
-	result, err := rc.ExecWP(context.Background(), site,
-		wpcli.New("cron", "event", "list").Format("json").Build(site.WPPath))
-	if err != nil {
-		return err
-	}
-	if result.ExitCode != 0 {
-		return fmt.Errorf("wp cron event list: %s", result.Stderr)
-	}
-	events, err := wpcli.ParseJSON[wpcli.CronEvent](result.Stdout)
-	if err != nil {
-		return err
-	}
-	return rc.Formatter.Format(events)
+	return runStructuredListCommand[wpcli.CronEvent](g, "cron event list", "", func(*registry.Site) *wpcli.Command {
+		return wpcli.New("cron", "event", "list").Format("json")
+	})
 }
 
 func (c *CronEventRunCmd) Run(g *Globals) error {
@@ -98,29 +76,9 @@ func (c *CronEventDeleteCmd) Run(g *Globals) error {
 }
 
 func (c *CronScheduleListCmd) Run(g *Globals) error {
-	rc, err := NewRunContext(g)
-	if err != nil {
-		return err
-	}
-	defer rc.Close()
-	site, err := rc.ResolveSite()
-	if err != nil {
-		return err
-	}
-
-	result, err := rc.ExecWP(context.Background(), site,
-		wpcli.New("cron", "schedule", "list").Format("json").Build(site.WPPath))
-	if err != nil {
-		return err
-	}
-	if result.ExitCode != 0 {
-		return fmt.Errorf("wp cron schedule list: %s", result.Stderr)
-	}
-	schedules, err := wpcli.ParseJSON[wpcli.CronSchedule](result.Stdout)
-	if err != nil {
-		return err
-	}
-	return rc.Formatter.Format(schedules)
+	return runStructuredListCommand[wpcli.CronSchedule](g, "cron schedule list", "", func(*registry.Site) *wpcli.Command {
+		return wpcli.New("cron", "schedule", "list").Format("json")
+	})
 }
 
 func (c *CronTestCmd) Run(g *Globals) error {

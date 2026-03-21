@@ -1,10 +1,8 @@
 package cmd
 
 import (
-	"context"
-	"fmt"
-
 	"github.com/builtbyrobben/wpssh/internal/cache"
+	"github.com/builtbyrobben/wpssh/internal/registry"
 	"github.com/builtbyrobben/wpssh/internal/wpcli"
 )
 
@@ -47,80 +45,28 @@ type (
 )
 
 func (c *DBExportCmd) Run(g *Globals) error {
-	rc, err := NewRunContext(g)
-	if err != nil {
-		return err
-	}
-	defer rc.Close()
-	site, err := rc.ResolveSite()
-	if err != nil {
-		return err
-	}
-
-	builder := wpcli.New("db", "export")
-	if c.File != "" {
-		builder.Arg(c.File)
-	}
-	result, err := rc.ExecWP(context.Background(), site, builder.Build(site.WPPath))
-	if err != nil {
-		return err
-	}
-	if result.ExitCode != 0 {
-		return fmt.Errorf("wp db export: %s", result.Stderr)
-	}
-	fmt.Fprint(rc.Stdout, result.Stdout)
-	return nil
+	return runWPCommand(g, "db export", nil, func(*registry.Site) *wpcli.Command {
+		builder := wpcli.New("db", "export")
+		if c.File != "" {
+			builder.Arg(c.File)
+		}
+		return builder
+	})
 }
 
 func (c *DBImportCmd) Run(g *Globals) error {
-	rc, err := NewRunContext(g)
-	if err != nil {
-		return err
-	}
-	defer rc.Close()
-	site, err := rc.ResolveSite()
-	if err != nil {
-		return err
-	}
-
-	result, err := rc.ExecWP(context.Background(), site,
-		wpcli.New("db", "import").Arg(c.File).Build(site.WPPath))
-	if err != nil {
-		return err
-	}
-	if result.ExitCode != 0 {
-		return fmt.Errorf("wp db import: %s", result.Stderr)
-	}
-	// DB import can change everything — invalidate all categories.
-	rc.CacheInvalidate(site.Alias, []string{
+	return runWPCommand(g, "db import", []string{
 		cache.CategoryPlugins, cache.CategoryThemes, cache.CategoryCore,
 		cache.CategoryUsers, cache.CategoryOptions, cache.CategorySnapshot,
+	}, func(*registry.Site) *wpcli.Command {
+		return wpcli.New("db", "import").Arg(c.File)
 	})
-	fmt.Fprint(rc.Stdout, result.Stdout)
-	return nil
 }
 
 func (c *DBQueryCmd) Run(g *Globals) error {
-	rc, err := NewRunContext(g)
-	if err != nil {
-		return err
-	}
-	defer rc.Close()
-	site, err := rc.ResolveSite()
-	if err != nil {
-		return err
-	}
-
-	result, err := rc.ExecWP(context.Background(), site,
-		wpcli.New("db", "query").Arg(c.SQL).Build(site.WPPath))
-	if err != nil {
-		return err
-	}
-	if result.ExitCode != 0 {
-		return fmt.Errorf("wp db query: %s", result.Stderr)
-	}
-	fmt.Fprint(rc.Stdout, result.Stdout)
-	return nil
+	return runWPCommand(g, "db query", nil, func(*registry.Site) *wpcli.Command {
+		return wpcli.New("db", "query").Arg(c.SQL)
+	})
 }
 
 func (c *DBSearchCmd) Run(g *Globals) error {
@@ -144,82 +90,28 @@ func (c *DBCheckCmd) Run(g *Globals) error {
 }
 
 func (c *DBRepairCmd) Run(g *Globals) error {
-	rc, err := NewRunContext(g)
-	if err != nil {
-		return err
-	}
-	defer rc.Close()
-	site, err := rc.ResolveSite()
-	if err != nil {
-		return err
-	}
-
-	result, err := rc.ExecWP(context.Background(), site,
-		wpcli.New("db", "repair").Build(site.WPPath))
-	if err != nil {
-		return err
-	}
-	if result.ExitCode != 0 {
-		return fmt.Errorf("wp db repair: %s", result.Stderr)
-	}
-	rc.CacheInvalidate(site.Alias, []string{
+	return runWPCommand(g, "db repair", []string{
 		cache.CategoryPlugins, cache.CategoryThemes, cache.CategoryCore,
 		cache.CategoryUsers, cache.CategoryOptions, cache.CategorySnapshot,
+	}, func(*registry.Site) *wpcli.Command {
+		return wpcli.New("db", "repair")
 	})
-	fmt.Fprint(rc.Stdout, result.Stdout)
-	return nil
 }
 
 func (c *DBOptimizeCmd) Run(g *Globals) error {
-	rc, err := NewRunContext(g)
-	if err != nil {
-		return err
-	}
-	defer rc.Close()
-	site, err := rc.ResolveSite()
-	if err != nil {
-		return err
-	}
-
-	result, err := rc.ExecWP(context.Background(), site,
-		wpcli.New("db", "optimize").Build(site.WPPath))
-	if err != nil {
-		return err
-	}
-	if result.ExitCode != 0 {
-		return fmt.Errorf("wp db optimize: %s", result.Stderr)
-	}
-	rc.CacheInvalidate(site.Alias, []string{
+	return runWPCommand(g, "db optimize", []string{
 		cache.CategoryPlugins, cache.CategoryThemes, cache.CategoryCore,
 		cache.CategoryUsers, cache.CategoryOptions, cache.CategorySnapshot,
+	}, func(*registry.Site) *wpcli.Command {
+		return wpcli.New("db", "optimize")
 	})
-	fmt.Fprint(rc.Stdout, result.Stdout)
-	return nil
 }
 
 func (c *DBResetCmd) Run(g *Globals) error {
-	rc, err := NewRunContext(g)
-	if err != nil {
-		return err
-	}
-	defer rc.Close()
-	site, err := rc.ResolveSite()
-	if err != nil {
-		return err
-	}
-
-	result, err := rc.ExecWP(context.Background(), site,
-		wpcli.New("db", "reset").Build(site.WPPath))
-	if err != nil {
-		return err
-	}
-	if result.ExitCode != 0 {
-		return fmt.Errorf("wp db reset: %s", result.Stderr)
-	}
-	rc.CacheInvalidate(site.Alias, []string{
+	return runWPCommand(g, "db reset", []string{
 		cache.CategoryPlugins, cache.CategoryThemes, cache.CategoryCore,
 		cache.CategoryUsers, cache.CategoryOptions, cache.CategorySnapshot,
+	}, func(*registry.Site) *wpcli.Command {
+		return wpcli.New("db", "reset")
 	})
-	fmt.Fprint(rc.Stdout, result.Stdout)
-	return nil
 }

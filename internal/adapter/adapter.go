@@ -18,8 +18,8 @@ type AdapterCapabilities struct {
 // Adapter defines how commands and file transfers are executed on a host.
 // Different hosting environments (cPanel, WP Engine) implement this interface.
 type Adapter interface {
-	// Exec runs a wp-cli command on the remote site.
-	// The wpCmd should be the wp-cli arguments (e.g., "plugin list --format=json").
+	// Exec runs a shell command on the remote site.
+	// Callers are responsible for building the full remote command string.
 	Exec(ctx context.Context, client *internalssh.SSHClient, site *registry.Site, wpCmd string) (internalssh.ExecResult, error)
 
 	// Upload transfers a local file to the remote host.

@@ -1,11 +1,8 @@
 package cmd
 
 import (
-	"context"
-	"encoding/json"
-	"fmt"
-
 	"github.com/builtbyrobben/wpssh/internal/cache"
+	"github.com/builtbyrobben/wpssh/internal/registry"
 	"github.com/builtbyrobben/wpssh/internal/wpcli"
 )
 
@@ -74,198 +71,53 @@ type UserMetaDeleteCmd struct {
 }
 
 func (c *UserListCmd) Run(g *Globals) error {
-	rc, err := NewRunContext(g)
-	if err != nil {
-		return err
-	}
-	defer rc.Close()
-	site, err := rc.ResolveSite()
-	if err != nil {
-		return err
-	}
-
-	builder := wpcli.New("user", "list").Format("json")
-	if c.Role != "" {
-		builder.Flag("role", c.Role)
-	}
-	cacheKey := builder.CacheKey()
-
-	// Check cache first.
-	if cached := rc.CacheGet(site.Alias, cacheKey); cached != "" {
-		users, err := wpcli.ParseJSON[wpcli.User](cached)
-		if err == nil {
-			return rc.Formatter.Format(users)
+	return runStructuredListCommand[wpcli.User](g, "user list", cache.CategoryUsers, func(*registry.Site) *wpcli.Command {
+		builder := wpcli.New("user", "list").Format("json")
+		if c.Role != "" {
+			builder.Flag("role", c.Role)
 		}
-	}
-
-	result, err := rc.ExecWP(context.Background(), site, builder.Build(site.WPPath))
-	if err != nil {
-		return err
-	}
-	if result.ExitCode != 0 {
-		return fmt.Errorf("wp user list: %s", result.Stderr)
-	}
-
-	users, err := wpcli.ParseJSON[wpcli.User](result.Stdout)
-	if err != nil {
-		return err
-	}
-
-	// Store in cache.
-	if data, err := json.Marshal(users); err == nil {
-		rc.CacheSet(site.Alias, cacheKey, "user list", string(data), cache.CategoryUsers, cache.TTLUsers)
-	}
-
-	return rc.Formatter.Format(users)
+		return builder
+	})
 }
 
 func (c *UserCreateCmd) Run(g *Globals) error {
-	rc, err := NewRunContext(g)
-	if err != nil {
-		return err
-	}
-	defer rc.Close()
-	site, err := rc.ResolveSite()
-	if err != nil {
-		return err
-	}
-
-	builder := wpcli.New("user", "create").Arg(c.Login).Arg(c.Email)
-	if c.Role != "" {
-		builder.Flag("role", c.Role)
-	}
-	result, err := rc.ExecWP(context.Background(), site, builder.Build(site.WPPath))
-	if err != nil {
-		return err
-	}
-	if result.ExitCode != 0 {
-		return fmt.Errorf("wp user create: %s", result.Stderr)
-	}
-	rc.CacheInvalidate(site.Alias, []string{cache.CategoryUsers, cache.CategorySnapshot})
-	fmt.Fprint(rc.Stdout, result.Stdout)
-	return nil
+	return runWPCommand(g, "user create", []string{cache.CategoryUsers, cache.CategorySnapshot}, func(*registry.Site) *wpcli.Command {
+		builder := wpcli.New("user", "create").Arg(c.Login).Arg(c.Email)
+		if c.Role != "" {
+			builder.Flag("role", c.Role)
+		}
+		return builder
+	})
 }
 
 func (c *UserDeleteCmd) Run(g *Globals) error {
-	rc, err := NewRunContext(g)
-	if err != nil {
-		return err
-	}
-	defer rc.Close()
-	site, err := rc.ResolveSite()
-	if err != nil {
-		return err
-	}
-
-	result, err := rc.ExecWP(context.Background(), site,
-		wpcli.New("user", "delete").Arg(c.User).Build(site.WPPath))
-	if err != nil {
-		return err
-	}
-	if result.ExitCode != 0 {
-		return fmt.Errorf("wp user delete: %s", result.Stderr)
-	}
-	rc.CacheInvalidate(site.Alias, []string{cache.CategoryUsers, cache.CategorySnapshot})
-	fmt.Fprint(rc.Stdout, result.Stdout)
-	return nil
+	return runWPCommand(g, "user delete", []string{cache.CategoryUsers, cache.CategorySnapshot}, func(*registry.Site) *wpcli.Command {
+		return wpcli.New("user", "delete").Arg(c.User)
+	})
 }
 
 func (c *UserGetCmd) Run(g *Globals) error {
-	rc, err := NewRunContext(g)
-	if err != nil {
-		return err
-	}
-	defer rc.Close()
-	site, err := rc.ResolveSite()
-	if err != nil {
-		return err
-	}
-
-	result, err := rc.ExecWP(context.Background(), site,
-		wpcli.New("user", "get").Arg(c.User).Format("json").Build(site.WPPath))
-	if err != nil {
-		return err
-	}
-	if result.ExitCode != 0 {
-		return fmt.Errorf("wp user get: %s", result.Stderr)
-	}
-	user, err := wpcli.ParseSingle[wpcli.User](result.Stdout)
-	if err != nil {
-		return err
-	}
-	return rc.Formatter.Format(user)
+	return runStructuredSingleCommand[wpcli.User](g, "user get", func(*registry.Site) *wpcli.Command {
+		return wpcli.New("user", "get").Arg(c.User).Format("json")
+	})
 }
 
 func (c *UserUpdateCmd) Run(g *Globals) error {
-	rc, err := NewRunContext(g)
-	if err != nil {
-		return err
-	}
-	defer rc.Close()
-	site, err := rc.ResolveSite()
-	if err != nil {
-		return err
-	}
-
-	result, err := rc.ExecWP(context.Background(), site,
-		wpcli.New("user", "update").Arg(c.User).Build(site.WPPath))
-	if err != nil {
-		return err
-	}
-	if result.ExitCode != 0 {
-		return fmt.Errorf("wp user update: %s", result.Stderr)
-	}
-	rc.CacheInvalidate(site.Alias, []string{cache.CategoryUsers})
-	fmt.Fprint(rc.Stdout, result.Stdout)
-	return nil
+	return runWPCommand(g, "user update", []string{cache.CategoryUsers}, func(*registry.Site) *wpcli.Command {
+		return wpcli.New("user", "update").Arg(c.User)
+	})
 }
 
 func (c *UserSetRoleCmd) Run(g *Globals) error {
-	rc, err := NewRunContext(g)
-	if err != nil {
-		return err
-	}
-	defer rc.Close()
-	site, err := rc.ResolveSite()
-	if err != nil {
-		return err
-	}
-
-	result, err := rc.ExecWP(context.Background(), site,
-		wpcli.New("user", "set-role").Arg(c.User).Arg(c.Role).Build(site.WPPath))
-	if err != nil {
-		return err
-	}
-	if result.ExitCode != 0 {
-		return fmt.Errorf("wp user set-role: %s", result.Stderr)
-	}
-	rc.CacheInvalidate(site.Alias, []string{cache.CategoryUsers})
-	fmt.Fprint(rc.Stdout, result.Stdout)
-	return nil
+	return runWPCommand(g, "user set-role", []string{cache.CategoryUsers}, func(*registry.Site) *wpcli.Command {
+		return wpcli.New("user", "set-role").Arg(c.User).Arg(c.Role)
+	})
 }
 
 func (c *UserResetPasswordCmd) Run(g *Globals) error {
-	rc, err := NewRunContext(g)
-	if err != nil {
-		return err
-	}
-	defer rc.Close()
-	site, err := rc.ResolveSite()
-	if err != nil {
-		return err
-	}
-
-	result, err := rc.ExecWP(context.Background(), site,
-		wpcli.New("user", "reset-password").Arg(c.User).Build(site.WPPath))
-	if err != nil {
-		return err
-	}
-	if result.ExitCode != 0 {
-		return fmt.Errorf("wp user reset-password: %s", result.Stderr)
-	}
-	rc.CacheInvalidate(site.Alias, []string{cache.CategoryUsers})
-	fmt.Fprint(rc.Stdout, result.Stdout)
-	return nil
+	return runWPCommand(g, "user reset-password", []string{cache.CategoryUsers}, func(*registry.Site) *wpcli.Command {
+		return wpcli.New("user", "reset-password").Arg(c.User)
+	})
 }
 
 func (c *UserExistsCmd) Run(g *Globals) error {

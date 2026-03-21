@@ -1,9 +1,9 @@
 package cmd
 
 import (
-	"context"
 	"fmt"
 
+	"github.com/builtbyrobben/wpssh/internal/registry"
 	"github.com/builtbyrobben/wpssh/internal/wpcli"
 )
 
@@ -62,84 +62,29 @@ type PostMetaDeleteCmd struct {
 }
 
 func (c *PostListCmd) Run(g *Globals) error {
-	rc, err := NewRunContext(g)
-	if err != nil {
-		return err
-	}
-	defer rc.Close()
-	site, err := rc.ResolveSite()
-	if err != nil {
-		return err
-	}
-
-	builder := wpcli.New("post", "list").Format("json")
-	if c.PostType != "" {
-		builder.Flag("post_type", c.PostType)
-	}
-	result, err := rc.ExecWP(context.Background(), site, builder.Build(site.WPPath))
-	if err != nil {
-		return err
-	}
-	if result.ExitCode != 0 {
-		return fmt.Errorf("wp post list: %s", result.Stderr)
-	}
-	posts, err := wpcli.ParseJSON[wpcli.Post](result.Stdout)
-	if err != nil {
-		return err
-	}
-	return rc.Formatter.Format(posts)
+	return runStructuredListCommand[wpcli.Post](g, "post list", "", func(*registry.Site) *wpcli.Command {
+		builder := wpcli.New("post", "list").Format("json")
+		if c.PostType != "" {
+			builder.Flag("post_type", c.PostType)
+		}
+		return builder
+	})
 }
 
 func (c *PostCreateCmd) Run(g *Globals) error {
-	rc, err := NewRunContext(g)
-	if err != nil {
-		return err
-	}
-	defer rc.Close()
-	site, err := rc.ResolveSite()
-	if err != nil {
-		return err
-	}
-
-	builder := wpcli.New("post", "create")
-	if c.PostTitle != "" {
-		builder.Flag("post_title", c.PostTitle)
-	}
-	result, err := rc.ExecWP(context.Background(), site, builder.Build(site.WPPath))
-	if err != nil {
-		return err
-	}
-	if result.ExitCode != 0 {
-		return fmt.Errorf("wp post create: %s", result.Stderr)
-	}
-	fmt.Fprint(rc.Stdout, result.Stdout)
-	return nil
+	return runWPCommand(g, "post create", nil, func(*registry.Site) *wpcli.Command {
+		builder := wpcli.New("post", "create")
+		if c.PostTitle != "" {
+			builder.Flag("post_title", c.PostTitle)
+		}
+		return builder
+	})
 }
 
 func (c *PostGetCmd) Run(g *Globals) error {
-	rc, err := NewRunContext(g)
-	if err != nil {
-		return err
-	}
-	defer rc.Close()
-	site, err := rc.ResolveSite()
-	if err != nil {
-		return err
-	}
-
-	result, err := rc.ExecWP(context.Background(), site,
-		wpcli.New("post", "get").Arg(fmt.Sprint(c.ID)).Format("json").Build(site.WPPath))
-	if err != nil {
-		return err
-	}
-	if result.ExitCode != 0 {
-		return fmt.Errorf("wp post get: %s", result.Stderr)
-	}
-	post, err := wpcli.ParseSingle[wpcli.Post](result.Stdout)
-	if err != nil {
-		return err
-	}
-	return rc.Formatter.Format(post)
+	return runStructuredSingleCommand[wpcli.Post](g, "post get", func(*registry.Site) *wpcli.Command {
+		return wpcli.New("post", "get").Arg(fmt.Sprint(c.ID)).Format("json")
+	})
 }
 
 func (c *PostUpdateCmd) Run(g *Globals) error {
@@ -147,29 +92,13 @@ func (c *PostUpdateCmd) Run(g *Globals) error {
 }
 
 func (c *PostDeleteCmd) Run(g *Globals) error {
-	rc, err := NewRunContext(g)
-	if err != nil {
-		return err
-	}
-	defer rc.Close()
-	site, err := rc.ResolveSite()
-	if err != nil {
-		return err
-	}
-
-	builder := wpcli.New("post", "delete").Arg(fmt.Sprint(c.ID))
-	if c.Force {
-		builder.BoolFlag("force")
-	}
-	result, err := rc.ExecWP(context.Background(), site, builder.Build(site.WPPath))
-	if err != nil {
-		return err
-	}
-	if result.ExitCode != 0 {
-		return fmt.Errorf("wp post delete: %s", result.Stderr)
-	}
-	fmt.Fprint(rc.Stdout, result.Stdout)
-	return nil
+	return runWPCommand(g, "post delete", nil, func(*registry.Site) *wpcli.Command {
+		builder := wpcli.New("post", "delete").Arg(fmt.Sprint(c.ID))
+		if c.Force {
+			builder.BoolFlag("force")
+		}
+		return builder
+	})
 }
 
 func (c *PostExistsCmd) Run(g *Globals) error {

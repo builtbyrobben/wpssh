@@ -1,10 +1,13 @@
 package cmd
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"strings"
+	"time"
 
+	"github.com/builtbyrobben/wpssh/internal/batch"
 	"github.com/builtbyrobben/wpssh/internal/config"
 	"github.com/builtbyrobben/wpssh/internal/registry"
 )
@@ -242,27 +245,49 @@ type SitesTestCmd struct {
 }
 
 func (c *SitesTestCmd) Run(globals *Globals) error {
-	// SSH connectivity testing requires the SSH client (Phase 1).
-	// For now, verify the site exists in the registry.
-	reg, _, err := buildRegistry()
+	rc, err := NewRunContext(globals)
 	if err != nil {
 		return err
 	}
+	defer rc.Close()
 
 	if c.All {
-		fmt.Printf("Found %d sites in registry. SSH testing not yet implemented.\n", reg.Len())
-		return nil
+		sites := rc.Registry.List()
+		results := batch.NewExecutor().Execute(context.Background(), sites, func(ctx context.Context, site *registry.Site) (string, error) {
+			testCtx, cancel := context.WithTimeout(ctx, 15*time.Second)
+			defer cancel()
+
+			result, err := rc.SSHClient.Exec(testCtx, SSHConfig(site), site.CanonicalHost, "printf connected")
+			if err != nil {
+				return "", err
+			}
+			if result.ExitCode != 0 {
+				return "", fmt.Errorf("%s", strings.TrimSpace(result.Stderr))
+			}
+			return strings.TrimSpace(result.Stdout), nil
+		}, batchOptions(globals, 0, "sites test"))
+		return writeBatchReport(rc, results)
 	}
 
 	if c.Alias == "" {
 		return fmt.Errorf("provide a site alias or use --all")
 	}
 
-	site, err := reg.Get(c.Alias)
+	site, err := rc.Registry.Get(c.Alias)
 	if err != nil {
 		return err
 	}
-	fmt.Printf("Site %s found: %s@%s:%d (SSH testing not yet implemented)\n",
-		site.Alias, site.User, site.Hostname, site.Port)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+
+	result, err := rc.SSHClient.Exec(ctx, SSHConfig(site), site.CanonicalHost, "printf connected")
+	if err != nil {
+		return err
+	}
+	if result.ExitCode != 0 {
+		return fmt.Errorf("ssh test failed: %s", strings.TrimSpace(result.Stderr))
+	}
+	fmt.Printf("Site %s connected: %s@%s:%d\n", site.Alias, site.User, site.Hostname, site.Port)
 	return nil
 }
