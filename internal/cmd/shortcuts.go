@@ -124,7 +124,7 @@ func (c *UpdateAllCmd) Run(g *Globals) error {
 	if err != nil {
 		return err
 	}
-	bashCmd := fmt.Sprintf("bash -s <<'WPGO_SCRIPT'\n%s\nWPGO_SCRIPT", script)
+	bashCmd := buildScriptCommand(site.WPPath, script, nil)
 	result, err := rc.ExecWP(ctx, site, bashCmd)
 	if err != nil {
 		fmt.Printf("  Cache clear error: %v\n", err)
@@ -194,16 +194,7 @@ func runScript(g *Globals, scriptName string, args []string, format func(string,
 	defer cancel()
 
 	// Build the command to execute the script via heredoc with optional args.
-	var cmd string
-	if len(args) > 0 {
-		quotedArgs := make([]string, len(args))
-		for i, arg := range args {
-			quotedArgs[i] = shellQuote(arg)
-		}
-		cmd = fmt.Sprintf("bash -s -- %s <<'WPGO_SCRIPT'\n%s\nWPGO_SCRIPT", strings.Join(quotedArgs, " "), script)
-	} else {
-		cmd = fmt.Sprintf("bash -s <<'WPGO_SCRIPT'\n%s\nWPGO_SCRIPT", script)
-	}
+	cmd := buildScriptCommand(site.WPPath, script, args)
 
 	result, err := rc.ExecWP(ctx, site, cmd)
 	if err != nil {
@@ -218,6 +209,28 @@ func runScript(g *Globals, scriptName string, args []string, format func(string,
 	output := extractJSON(result.Stdout)
 
 	return format(output, g)
+}
+
+func buildScriptCommand(wpPath, script string, args []string) string {
+	var cmd strings.Builder
+	cmd.WriteString("cd ")
+	cmd.WriteString(shellQuote(wpPath))
+	cmd.WriteString(" && ")
+	cmd.WriteString("bash -s")
+
+	if len(args) > 0 {
+		quotedArgs := make([]string, len(args))
+		for i, arg := range args {
+			quotedArgs[i] = shellQuote(arg)
+		}
+		cmd.WriteString(" -- ")
+		cmd.WriteString(strings.Join(quotedArgs, " "))
+	}
+
+	cmd.WriteString(" <<'WPGO_SCRIPT'\n")
+	cmd.WriteString(script)
+	cmd.WriteString("\nWPGO_SCRIPT")
+	return cmd.String()
 }
 
 // extractJSON finds the first JSON object in the output string.

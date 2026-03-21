@@ -14,6 +14,12 @@ import (
 	"github.com/builtbyrobben/wpssh/internal/safety"
 )
 
+const (
+	formatTable = "table"
+	formatJSON  = "json"
+	formatPlain = "plain"
+)
+
 // SetupCmd guides users through creating/updating wpgo config.
 type SetupCmd struct {
 	DefaultSite    string `help:"Set default site alias" name:"default-site"`
@@ -91,7 +97,7 @@ func runInteractiveSetup(cfg *config.Config, in io.Reader, out io.Writer) (bool,
 	if ok, err := p.yesNo("Configure default output format?", true); err != nil {
 		return false, err
 	} else if ok {
-		format, err := p.choice("Default format", cfg.DefaultFormat, []string{"table", "json", "plain"})
+		format, err := p.choice("Default format", cfg.DefaultFormat, []string{formatTable, formatJSON, formatPlain})
 		if err != nil {
 			return false, err
 		}
@@ -224,12 +230,12 @@ func applySetupFlags(cfg *config.Config, c *SetupCmd) (bool, error) {
 
 func normalizeFormat(v string) (string, bool) {
 	switch strings.ToLower(strings.TrimSpace(v)) {
-	case "table":
-		return "table", true
-	case "json":
-		return "json", true
-	case "plain":
-		return "plain", true
+	case formatTable:
+		return formatTable, true
+	case formatJSON:
+		return formatJSON, true
+	case formatPlain:
+		return formatPlain, true
 	default:
 		return "", false
 	}

@@ -27,12 +27,10 @@ func (a *StandardAdapter) Capabilities() AdapterCapabilities {
 	}
 }
 
-// Exec runs a wp-cli command on a standard host.
-// Wraps the command as: cd {wp_path} && wp {wpCmd}
+// Exec runs a fully formed shell command on a standard host.
 func (a *StandardAdapter) Exec(ctx context.Context, client *internalssh.SSHClient, site *registry.Site, wpCmd string) (internalssh.ExecResult, error) {
 	cfg := siteToClientConfig(site)
-	cmd := fmt.Sprintf("cd %s && wp %s", shellQuote(site.WPPath), wpCmd)
-	return client.Exec(ctx, cfg, site.CanonicalHost, cmd)
+	return client.Exec(ctx, cfg, site.CanonicalHost, wpCmd)
 }
 
 // Upload streams a local file to the remote host via stdin.

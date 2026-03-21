@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"slices"
 	"time"
 
 	"github.com/builtbyrobben/wpssh/internal/adapter"
@@ -45,11 +46,8 @@ func NewRunContext(g *Globals) (*RunContext, error) {
 
 	// Build rate limiter with config.
 	hostConfigs := make(map[string]internalssh.HostConfig)
-	for host, rl := range cfg.RateLimits {
-		hostConfigs[host] = internalssh.HostConfig{
-			Delay:    rl.Delay,
-			MaxConns: rl.MaxConns,
-		}
+	for _, site := range reg.List() {
+		hostConfigs[site.CanonicalHost] = resolveHostConfig(cfg, site)
 	}
 	limiter := internalssh.NewRateLimiter(hostConfigs)
 	pool := internalssh.NewPool(limiter, 5*time.Minute)
@@ -64,7 +62,8 @@ func NewRunContext(g *Globals) (*RunContext, error) {
 		}
 	}
 
-	formatter := outfmt.New(g.JSON, g.Plain, g.Fields)
+	jsonFlag, plainFlag := resolveFormatFlags(cfg, g)
+	formatter := outfmt.New(jsonFlag, plainFlag, g.Fields)
 
 	return &RunContext{
 		Registry:  reg,
@@ -98,6 +97,57 @@ func (rc *RunContext) ResolveSite() (*registry.Site, error) {
 		return nil, fmt.Errorf("no site specified: use --site or set default_site in config")
 	}
 	return rc.Registry.Get(alias)
+}
+
+// ResolveSites resolves the current target set for single-site or batch mode.
+func (rc *RunContext) ResolveSites() ([]*registry.Site, error) {
+	if rc.Globals.Site != "" && (len(rc.Globals.Sites) > 0 || rc.Globals.Group != "") {
+		return nil, fmt.Errorf("use either --site or batch targeting flags, not both")
+	}
+	if len(rc.Globals.Sites) > 0 && rc.Globals.Group != "" {
+		return nil, fmt.Errorf("use either --sites or --group, not both")
+	}
+
+	if len(rc.Globals.Sites) > 0 {
+		sites := make([]*registry.Site, 0, len(rc.Globals.Sites))
+		seen := make(map[string]struct{}, len(rc.Globals.Sites))
+		for _, alias := range rc.Globals.Sites {
+			site, err := rc.Registry.Get(alias)
+			if err != nil {
+				return nil, err
+			}
+			if _, ok := seen[site.Alias]; ok {
+				continue
+			}
+			seen[site.Alias] = struct{}{}
+			sites = append(sites, site)
+		}
+		return sites, nil
+	}
+
+	if rc.Globals.Group != "" {
+		sites := rc.Registry.Filter(registry.FilterOptions{Group: rc.Globals.Group})
+		if len(sites) == 0 {
+			return nil, fmt.Errorf("no sites found for group %q", rc.Globals.Group)
+		}
+		slices.SortFunc(sites, func(a, b *registry.Site) int {
+			switch {
+			case a.Alias < b.Alias:
+				return -1
+			case a.Alias > b.Alias:
+				return 1
+			default:
+				return 0
+			}
+		})
+		return sites, nil
+	}
+
+	site, err := rc.ResolveSite()
+	if err != nil {
+		return nil, err
+	}
+	return []*registry.Site{site}, nil
 }
 
 // ExecWP executes a wp-cli command on a site and returns the result.
@@ -164,6 +214,26 @@ func (rc *RunContext) CacheInvalidate(siteAlias string, categories []string) {
 	}
 }
 
+// CacheTTL returns the configured TTL, in seconds, for a cache category.
+func (rc *RunContext) CacheTTL(category string) int {
+	switch category {
+	case cache.CategoryPlugins:
+		return int(rc.Config.CacheTTLs.Plugins.Seconds())
+	case cache.CategoryThemes:
+		return int(rc.Config.CacheTTLs.Themes.Seconds())
+	case cache.CategoryCore:
+		return int(rc.Config.CacheTTLs.Core.Seconds())
+	case cache.CategoryUsers:
+		return int(rc.Config.CacheTTLs.Users.Seconds())
+	case cache.CategoryOptions:
+		return int(rc.Config.CacheTTLs.Options.Seconds())
+	case cache.CategorySnapshot:
+		return int(rc.Config.CacheTTLs.Snapshot.Seconds())
+	default:
+		return 0
+	}
+}
+
 // SSHConfig builds an SSH ClientConfig from a registry Site.
 func SSHConfig(site *registry.Site) internalssh.ClientConfig {
 	return internalssh.ClientConfig{
@@ -173,4 +243,53 @@ func SSHConfig(site *registry.Site) internalssh.ClientConfig {
 		IdentityFile:   site.IdentityFile,
 		ConnectTimeout: 30 * time.Second,
 	}
+}
+
+func resolveFormatFlags(cfg *config.Config, g *Globals) (jsonFlag, plainFlag bool) {
+	if g.JSON || g.Plain {
+		return g.JSON, g.Plain
+	}
+
+	switch cfg.DefaultFormat {
+	case "json":
+		return true, false
+	case "plain":
+		return false, true
+	default:
+		return false, false
+	}
+}
+
+func resolveHostConfig(cfg *config.Config, site *registry.Site) internalssh.HostConfig {
+	hostCfg := internalssh.HostConfig{
+		Delay:    internalssh.DefaultHostConfig.Delay,
+		MaxConns: internalssh.DefaultHostConfig.MaxConns,
+	}
+
+	if cfg.DefaultRateLimit.Delay > 0 {
+		hostCfg.Delay = cfg.DefaultRateLimit.Delay
+	}
+	if cfg.DefaultRateLimit.MaxConns > 0 {
+		hostCfg.MaxConns = cfg.DefaultRateLimit.MaxConns
+	}
+
+	if rl, ok := cfg.RateLimits[site.CanonicalHost]; ok {
+		if rl.Delay > 0 {
+			hostCfg.Delay = rl.Delay
+		}
+		if rl.MaxConns > 0 {
+			hostCfg.MaxConns = rl.MaxConns
+		}
+	}
+
+	if site.RateLimit != nil {
+		if site.RateLimit.Delay > 0 {
+			hostCfg.Delay = site.RateLimit.Delay
+		}
+		if site.RateLimit.MaxConns > 0 {
+			hostCfg.MaxConns = site.RateLimit.MaxConns
+		}
+	}
+
+	return hostCfg
 }

@@ -1,11 +1,8 @@
 package cmd
 
 import (
-	"context"
-	"encoding/json"
-	"fmt"
-
 	"github.com/builtbyrobben/wpssh/internal/cache"
+	"github.com/builtbyrobben/wpssh/internal/registry"
 	"github.com/builtbyrobben/wpssh/internal/wpcli"
 )
 
@@ -54,147 +51,41 @@ func (c *OptionGetCmd) Run(g *Globals) error {
 }
 
 func (c *OptionUpdateCmd) Run(g *Globals) error {
-	rc, err := NewRunContext(g)
-	if err != nil {
-		return err
-	}
-	defer rc.Close()
-	site, err := rc.ResolveSite()
-	if err != nil {
-		return err
-	}
-
-	result, err := rc.ExecWP(context.Background(), site,
-		wpcli.New("option", "update").Arg(c.Key).Arg(c.Value).Build(site.WPPath))
-	if err != nil {
-		return err
-	}
-	if result.ExitCode != 0 {
-		return fmt.Errorf("wp option update: %s", result.Stderr)
-	}
-	rc.CacheInvalidate(site.Alias, []string{cache.CategoryOptions})
-	fmt.Fprint(rc.Stdout, result.Stdout)
-	return nil
+	return runWPCommand(g, "option update", []string{cache.CategoryOptions}, func(*registry.Site) *wpcli.Command {
+		return wpcli.New("option", "update").Arg(c.Key).Arg(c.Value)
+	})
 }
 
 func (c *OptionAddCmd) Run(g *Globals) error {
-	rc, err := NewRunContext(g)
-	if err != nil {
-		return err
-	}
-	defer rc.Close()
-	site, err := rc.ResolveSite()
-	if err != nil {
-		return err
-	}
-
-	result, err := rc.ExecWP(context.Background(), site,
-		wpcli.New("option", "add").Arg(c.Key).Arg(c.Value).Build(site.WPPath))
-	if err != nil {
-		return err
-	}
-	if result.ExitCode != 0 {
-		return fmt.Errorf("wp option add: %s", result.Stderr)
-	}
-	rc.CacheInvalidate(site.Alias, []string{cache.CategoryOptions})
-	fmt.Fprint(rc.Stdout, result.Stdout)
-	return nil
+	return runWPCommand(g, "option add", []string{cache.CategoryOptions}, func(*registry.Site) *wpcli.Command {
+		return wpcli.New("option", "add").Arg(c.Key).Arg(c.Value)
+	})
 }
 
 func (c *OptionDeleteCmd) Run(g *Globals) error {
-	rc, err := NewRunContext(g)
-	if err != nil {
-		return err
-	}
-	defer rc.Close()
-	site, err := rc.ResolveSite()
-	if err != nil {
-		return err
-	}
-
-	result, err := rc.ExecWP(context.Background(), site,
-		wpcli.New("option", "delete").Arg(c.Key).Build(site.WPPath))
-	if err != nil {
-		return err
-	}
-	if result.ExitCode != 0 {
-		return fmt.Errorf("wp option delete: %s", result.Stderr)
-	}
-	rc.CacheInvalidate(site.Alias, []string{cache.CategoryOptions})
-	fmt.Fprint(rc.Stdout, result.Stdout)
-	return nil
+	return runWPCommand(g, "option delete", []string{cache.CategoryOptions}, func(*registry.Site) *wpcli.Command {
+		return wpcli.New("option", "delete").Arg(c.Key)
+	})
 }
 
 func (c *OptionListCmd) Run(g *Globals) error {
-	rc, err := NewRunContext(g)
-	if err != nil {
-		return err
-	}
-	defer rc.Close()
-	site, err := rc.ResolveSite()
-	if err != nil {
-		return err
-	}
-
-	builder := wpcli.New("option", "list").Format("json")
-	if c.Search != "" {
-		builder.Flag("search", c.Search)
-	}
-	cacheKey := builder.CacheKey()
-
-	// Check cache first.
-	if cached := rc.CacheGet(site.Alias, cacheKey); cached != "" {
-		options, err := wpcli.ParseJSON[wpcli.Option](cached)
-		if err == nil {
-			return rc.Formatter.Format(options)
+	return runStructuredListCommand[wpcli.Option](g, "option list", cache.CategoryOptions, func(*registry.Site) *wpcli.Command {
+		builder := wpcli.New("option", "list").Format("json")
+		if c.Search != "" {
+			builder.Flag("search", c.Search)
 		}
-	}
-
-	result, err := rc.ExecWP(context.Background(), site, builder.Build(site.WPPath))
-	if err != nil {
-		return err
-	}
-	if result.ExitCode != 0 {
-		return fmt.Errorf("wp option list: %s", result.Stderr)
-	}
-	options, err := wpcli.ParseJSON[wpcli.Option](result.Stdout)
-	if err != nil {
-		return err
-	}
-
-	// Store in cache.
-	if data, err := json.Marshal(options); err == nil {
-		rc.CacheSet(site.Alias, cacheKey, "option list", string(data), cache.CategoryOptions, cache.TTLOptions)
-	}
-
-	return rc.Formatter.Format(options)
+		return builder
+	})
 }
 
 func (c *OptionPatchCmd) Run(g *Globals) error {
-	rc, err := NewRunContext(g)
-	if err != nil {
-		return err
-	}
-	defer rc.Close()
-	site, err := rc.ResolveSite()
-	if err != nil {
-		return err
-	}
-
-	builder := wpcli.New("option", "patch").Arg(c.Action).Arg(c.Key).Arg(c.KeyPath)
-	if c.Value != "" {
-		builder.Arg(c.Value)
-	}
-	result, err := rc.ExecWP(context.Background(), site, builder.Build(site.WPPath))
-	if err != nil {
-		return err
-	}
-	if result.ExitCode != 0 {
-		return fmt.Errorf("wp option patch: %s", result.Stderr)
-	}
-	rc.CacheInvalidate(site.Alias, []string{cache.CategoryOptions})
-	fmt.Fprint(rc.Stdout, result.Stdout)
-	return nil
+	return runWPCommand(g, "option patch", []string{cache.CategoryOptions}, func(*registry.Site) *wpcli.Command {
+		builder := wpcli.New("option", "patch").Arg(c.Action).Arg(c.Key).Arg(c.KeyPath)
+		if c.Value != "" {
+			builder.Arg(c.Value)
+		}
+		return builder
+	})
 }
 
 func (c *OptionPluckCmd) Run(g *Globals) error {
